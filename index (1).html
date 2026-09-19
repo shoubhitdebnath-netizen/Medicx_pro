@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedixPro — AI Pharmacy &amp; Healthcare Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F5F8FA; --surface:#FFFFFF; --surface-2:#EEF3F6;
+  --ink:#0B2540; --ink-soft:#3A5065; --muted:#6C8299;
+  --primary:#0F6E5D; --primary-dark:#0A4F42; --primary-soft:#E4F3EF;
+  --accent:#FF7A45; --accent-soft:#FFE9DE;
+  --danger:#D64550; --danger-soft:#FBE4E6;
+  --warn:#C98A12; --warn-soft:#FBF0DA;
+  --sidebar:#08192B; --sidebar-hi:#0F3252; --sidebar-text:#AFC3D6;
+  --border:#DFE7ED;
+  --radius:14px; --radius-sm:8px;
+  --shadow:0 4px 16px rgba(11,37,64,0.06);
+  --shadow-lg:0 12px 32px rgba(11,37,64,0.14);
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+[data-theme="dark"]{
+  --bg:#081420; --surface:#0E2033; --surface-2:#122840;
+  --ink:#EAF2F8; --ink-soft:#C3D3E0; --muted:#84A0B8;
+  --primary:#1FAE8F; --primary-dark:#17886F; --primary-soft:#0F3A31;
+  --accent:#FF8F5E; --accent-soft:#3A2416;
+  --danger:#FF6B7A; --danger-soft:#3A1A20;
+  --warn:#E8B349; --warn-soft:#3A2E10;
+  --sidebar:#040D18; --sidebar-hi:#0C1E30; --sidebar-text:#8FA6BC;
+  --border:#1B3049;
+  --shadow:0 4px 16px rgba(0,0,0,0.35);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.5);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:var(--font-body); background:var(--bg); color:var(--ink); transition:background .25s,color .25s;}
+h1,h2,h3,h4,.display{font-family:var(--font-display);}
+.mono{font-family:var(--font-mono);}
+button{font-family:inherit; cursor:pointer;}
+a{color:inherit;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
+
+/* ---------- APP SHELL ---------- */
+.app{display:grid; grid-template-columns:264px 1fr; min-height:100vh;}
+.sidebar{
+  background:var(--sidebar); color:var(--sidebar-text); position:sticky; top:0; height:100vh;
+  display:flex; flex-direction:column; padding:20px 14px; overflow-y:auto; z-index:50;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:6px 10px 22px;}
+.brand-mark{width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg,var(--primary),var(--accent)); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.brand-mark svg{width:20px; height:20px;}
+.brand-name{color:#fff; font-weight:700; font-size:17px; letter-spacing:.2px;}
+.brand-tag{font-size:10px; color:var(--sidebar-text); letter-spacing:1.5px; text-transform:uppercase;}
+
+.nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:1.2px; opacity:.55; margin:16px 10px 6px; color:var(--sidebar-text);}
+.nav-item{
+  display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; font-size:13.5px;
+  color:var(--sidebar-text); font-weight:500; margin-bottom:2px; border:none; background:transparent; width:100%; text-align:left;
+  transition:background .15s, color .15s;
+}
+.nav-item svg{width:17px; height:17px; flex-shrink:0; opacity:.9;}
+.nav-item:hover{background:var(--sidebar-hi); color:#fff;}
+.nav-item.active{background:linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%); color:#fff; box-shadow:0 4px 12px rgba(15,110,93,.35);}
+.nav-item .badge{margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px;}
+.sidebar-foot{margin-top:auto; padding-top:14px; border-top:1px solid rgba(255,255,255,.08);}
+.sos-btn{
+  display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; border-radius:10px;
+  background:var(--danger); color:#fff; font-weight:700; font-size:13px; border:none; margin-bottom:10px;
+  box-shadow:0 4px 14px rgba(214,69,80,.4); animation:pulseSOS 2.2s infinite;
+}
+@keyframes pulseSOS{0%,100%{box-shadow:0 0 0 0 rgba(214,69,80,.5);} 50%{box-shadow:0 0 0 8px rgba(214,69,80,0);}}
+
+/* ---------- MAIN ---------- */
+.main{min-height:100vh; display:flex; flex-direction:column;}
+.topbar{
+  position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:14px; padding:14px 26px;
+  background:var(--surface); border-bottom:1px solid var(--border); backdrop-filter:blur(6px);
+}
+.hamburger{display:none; background:none; border:none; color:var(--ink);}
+.search-wrap{flex:1; max-width:520px; position:relative;}
+.search-wrap input{
+  width:100%; padding:10px 14px 10px 38px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2);
+  color:var(--ink); font-size:13.5px; outline:none;
+}
+.search-wrap input:focus{border-color:var(--primary);}
+.search-wrap svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--muted);}
+.search-results{
+  position:absolute; top:44px; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:12px;
+  box-shadow:var(--shadow-lg); max-height:320px; overflow-y:auto; display:none; z-index:60;
+}
+.search-results.show{display:block;}
+.search-results .sr-item{padding:10px 14px; font-size:13px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; cursor:pointer;}
+.search-results .sr-item:hover{background:var(--surface-2);}
+.search-results .sr-tag{font-size:10px; padding:2px 7px; border-radius:20px; background:var(--primary-soft); color:var(--primary);}
+.topbar-actions{display:flex; align-items:center; gap:10px; margin-left:auto;}
+.icon-btn{
+  position:relative; width:38px; height:38px; border-radius:10px; border:1px solid var(--border); background:var(--surface);
+  display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+}
+.icon-btn svg{width:18px; height:18px;}
+.icon-btn .dot{position:absolute; top:-3px; right:-3px; width:16px; height:16px; border-radius:50%; background:var(--accent); color:#fff; font-size:9px; display:flex; align-items:center; justify-content:center; font-weight:700; border:2px solid var(--surface);}
+.lang-toggle{display:flex; border:1px solid var(--border); border-radius:10px; overflow:hidden;}
+.lang-toggle button{padding:8px 10px; background:var(--surface); border:none; font-size:12px; font-weight:600; color:var(--muted);}
+.lang-toggle button.active{background:var(--primary); color:#fff;}
+.profile-chip{display:flex; align-items:center; gap:8px; padding:6px 10px 6px 6px; border-radius:24px; border:1px solid var(--border); background:var(--surface);}
+.profile-chip .av{width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--accent)); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700;}
+.profile-chip span{font-size:12.5px; font-weight:600;}
+
+.content{padding:24px 26px 60px; flex:1;}
+.page{display:none; animation:fadeUp .35s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px;}
+.page-head h1{font-size:22px; font-weight:700;}
+.page-head p{color:var(--muted); font-size:13px; margin-top:4px;}
+.btn{
+  display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; border:none; font-weight:600; font-size:13px;
+}
+.btn-primary{background:var(--primary); color:#fff; box-shadow:0 4px 14px rgba(15,110,93,.28);}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-outline{background:transparent; border:1px solid var(--border); color:var(--ink);}
+.btn-accent{background:var(--accent); color:#fff;}
+.btn-danger{background:var(--danger-soft); color:var(--danger);}
+.btn-sm{padding:6px 11px; font-size:12px;}
+.btn:disabled{opacity:.5; cursor:not-allowed;}
+
+/* grid + cards */
+.grid{display:grid; gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);}
+.stat-card{display:flex; flex-direction:column; gap:8px;}
+.stat-top{display:flex; align-items:center; justify-content:space-between;}
+.stat-icon{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center;}
+.stat-icon svg{width:19px; height:19px;}
+.stat-val{font-size:26px; font-weight:700; font-family:var(--font-display);}
+.stat-label{font-size:12.5px; color:var(--muted);}
+.stat-delta{font-size:11.5px; font-weight:700; padding:2px 7px; border-radius:20px; width:fit-content;}
+.delta-up{background:var(--primary-soft); color:var(--primary);}
+.delta-down{background:var(--danger-soft); color:var(--danger);}
+
+.section-title{font-size:15px; font-weight:700; margin:26px 0 12px; display:flex; align-items:center; gap:8px;}
+.pulse-wrap{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; display:flex; align-items:center; gap:18px; box-shadow:var(--shadow);}
+.pulse-wrap svg{flex-shrink:0;}
+.pulse-line{stroke:var(--primary); stroke-width:2.4; fill:none; stroke-dasharray:340; stroke-dashoffset:340; animation:draw 2.6s linear infinite;}
+@keyframes draw{to{stroke-dashoffset:-340;}}
+
+/* medicine cards */
+.filters-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+.chip-filter{padding:7px 13px; border-radius:20px; border:1px solid var(--border); background:var(--surface); font-size:12.5px; font-weight:600; color:var(--ink-soft);}
+.chip-filter.active{background:var(--primary); border-color:var(--primary); color:#fff;}
+.select{padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:12.5px;}
+.med-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px; display:flex; flex-direction:column; gap:8px; position:relative; transition:transform .15s, box-shadow .15s;}
+.med-card:hover{transform:translateY(-3px); box-shadow:var(--shadow-lg);}
+.med-thumb{height:80px; border-radius:10px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--primary);}
+.med-thumb svg{width:34px; height:34px;}
+.med-name{font-weight:700; font-size:13.5px;}
+.med-meta{font-size:11.5px; color:var(--muted);}
+.med-tags{display:flex; gap:6px; flex-wrap:wrap;}
+.tag{font-size:10px; padding:2px 8px; border-radius:20px; background:var(--surface-2); color:var(--ink-soft); font-weight:600;}
+.tag.rx{background:var(--danger-soft); color:var(--danger);}
+.tag.otc{background:var(--primary-soft); color:var(--primary);}
+.tag.low{background:var(--warn-soft); color:var(--warn);}
+.med-price-row{display:flex; align-items:center; justify-content:space-between; margin-top:auto;}
+.med-price{font-family:var(--font-mono); font-weight:700; font-size:15px;}
+.med-price .old{font-size:11px; color:var(--muted); text-decoration:line-through; margin-left:4px; font-weight:400;}
+.wish-btn{position:absolute; top:12px; right:12px; background:none; border:none; color:var(--muted);}
+.wish-btn.active{color:var(--danger);}
+.stars{color:var(--warn); font-size:12px;}
+
+/* generic list rows */
+.list-row{display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:14px 16px; margin-bottom:10px;}
+.list-row .av-lg{width:50px; height:50px; border-radius:12px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;}
+.list-row .grow{flex:1; min-width:0;}
+.list-row .grow h4{font-size:14px; font-weight:700;}
+.list-row .grow p{font-size:12px; color:var(--muted); margin-top:2px;}
+.list-row .actions{display:flex; gap:8px; flex-shrink:0;}
+.status-pill{font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px;}
+.pill-green{background:var(--primary-soft); color:var(--primary);}
+.pill-amber{background:var(--warn-soft); color:var(--warn);}
+.pill-red{background:var(--danger-soft); color:var(--danger);}
+
+/* cart / drawer */
+.drawer-overlay{position:fixed; inset:0; background:rgba(4,13,24,.45); z-index:90; display:none;}
+.drawer-overlay.show{display:block;}
+.drawer{position:fixed; top:0; right:0; height:100vh; width:400px; max-width:92vw; background:var(--surface); z-index:91; transform:translateX(100%); transition:transform .3s ease; display:flex; flex-direction:column; box-shadow:-10px 0 30px rgba(0,0,0,.2);}
+.drawer.show{transform:translateX(0);}
+.drawer-head{padding:18px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;}
+.drawer-body{padding:16px 20px; overflow-y:auto; flex:1;}
+.drawer-foot{padding:16px 20px; border-top:1px solid var(--border);}
+.cart-item{display:flex; gap:10px; align-items:center; margin-bottom:14px;}
+.cart-item .ci-thumb{width:44px; height:44px; border-radius:8px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; color:var(--primary); flex-shrink:0;}
+.qty-ctrl{display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:8px; padding:2px 6px;}
+.qty-ctrl button{background:none; border:none; font-size:14px; width:20px; color:var(--ink);}
+.row-between{display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:8px;}
+
+/* chat / AI assistant */
+.chat-fab{position:fixed; bottom:26px; right:26px; width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; border:none; box-shadow:var(--shadow-lg); display:flex; align-items:center; justify-content:center; z-index:80;}
+.chat-fab svg{width:26px; height:26px;}
+.chat-panel{position:fixed; bottom:96px; right:26px; width:380px; max-width:92vw; height:560px; max-height:75vh; background:var(--surface); border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow-lg); z-index:80; display:none; flex-direction:column; overflow:hidden;}
+.chat-panel.show{display:flex;}
+.chat-head{background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; padding:16px; display:flex; align-items:center; gap:10px;}
+.chat-head .pulse-dot{width:8px; height:8px; border-radius:50%; background:#6CFFCE; box-shadow:0 0 0 0 rgba(108,255,206,.6); animation:dotPulse 1.6s infinite;}
+@keyframes dotPulse{0%{box-shadow:0 0 0 0 rgba(108,255,206,.6);}70%{box-shadow:0 0 0 8px rgba(108,255,206,0);}100%{box-shadow:0 0 0 0 rgba(108,255,206,0);}}
+.chat-body{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:var(--surface-2);}
+.msg{max-width:82%; padding:10px 13px; border-radius:14px; font-size:13px; line-height:1.45;}
+.msg.bot{background:var(--surface); align-self:flex-start; border-bottom-left-radius:4px; box-shadow:var(--shadow);}
+.msg.user{background:var(--primary); color:#fff; align-self:flex-end; border-bottom-right-radius:4px;}
+.chat-suggestions{display:flex; gap:6px; flex-wrap:wrap; padding:0 16px 10px;}
+.chat-suggestions button{font-size:11px; padding:6px 10px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--ink-soft);}
+.chat-input-row{display:flex; gap:8px; padding:12px; border-top:1px solid var(--border);}
+.chat-input-row input{flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface-2); font-size:13px; outline:none;}
+.chat-input-row button{width:40px; border-radius:10px; background:var(--primary); color:#fff; border:none; display:flex; align-items:center; justify-content:center;}
+
+/* toasts */
+.toast-wrap{position:fixed; top:20px; right:20px; z-index:200; display:flex; flex-direction:column; gap:10px;}
+.toast{background:var(--ink); color:#fff; padding:12px 16px; border-radius:10px; font-size:13px; box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:10px; animation:toastIn .25s ease;}
+[data-theme="dark"] .toast{background:var(--surface-2); border:1px solid var(--border);}
+@keyframes toastIn{from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);}}
+
+/* forms */
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.field{display:flex; flex-direction:column; gap:6px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:12px; font-weight:600; color:var(--ink-soft);}
+.field input, .field select, .field textarea{padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:13px; outline:none; font-family:inherit;}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--primary);}
+
+/* modal */
+.modal-overlay{position:fixed; inset:0; background:rgba(4,13,24,.5); z-index:95; display:none; align-items:center; justify-content:center; padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface); border-radius:16px; padding:24px; width:480px; max-width:100%; max-height:88vh; overflow-y:auto; box-shadow:var(--shadow-lg);}
+.modal h3{margin-bottom:14px;}
+
+/* accordion (FAQ) */
+.acc-item{border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden;}
+.acc-head{padding:14px 16px; display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:13.5px; background:var(--surface);}
+.acc-body{max-height:0; overflow:hidden; transition:max-height .25s ease; background:var(--surface-2); font-size:13px; color:var(--ink-soft);}
+.acc-body p{padding:0 16px 14px;}
+.acc-item.open .acc-body{max-height:220px;}
+.acc-item.open .acc-chev{transform:rotate(180deg);}
+.acc-chev{transition:transform .2s;}
+
+/* misc */
+.progress-track{height:6px; border-radius:20px; background:var(--surface-2); overflow:hidden;}
+.progress-fill{height:100%; background:var(--primary); border-radius:20px;}
+.timeline{display:flex; justify-content:space-between; position:relative; margin:24px 0;}
+.timeline:before{content:''; position:absolute; top:14px; left:0; right:0; height:2px; background:var(--border);}
+.tl-step{display:flex; flex-direction:column; align-items:center; gap:8px; flex:1; position:relative; z-index:1;}
+.tl-dot{width:28px; height:28px; border-radius:50%; background:var(--surface-2); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--muted);}
+.tl-step.done .tl-dot{background:var(--primary); border-color:var(--primary); color:#fff;}
+.tl-step span{font-size:11px; color:var(--muted); text-align:center;}
+.tl-step.done span{color:var(--ink); font-weight:600;}
+.empty-state{text-align:center; padding:50px 20px; color:var(--muted);}
+.empty-state svg{width:44px; height:44px; margin-bottom:12px; opacity:.5;}
+.small-note{font-size:11.5px; color:var(--muted); margin-top:6px;}
+.warn-banner{background:var(--warn-soft); color:var(--warn); padding:10px 14px; border-radius:10px; font-size:12.5px; display:flex; gap:8px; align-items:flex-start; margin-bottom:14px;}
+.tab-row{display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:18px;}
+.tab-btn{padding:10px 4px; margin-right:16px; background:none; border:none; font-size:13px; font-weight:600; color:var(--muted); border-bottom:2px solid transparent;}
+.tab-btn.active{color:var(--primary); border-color:var(--primary);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.family-chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border); border-radius:24px; margin:0 8px 8px 0; font-size:12.5px; background:var(--surface);}
+.family-chip .fc-av{width:22px; height:22px; border-radius:50%; background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;}
+.toggle{position:relative; width:42px; height:24px; border-radius:20px; background:var(--border); border:none; flex-shrink:0;}
+.toggle.on{background:var(--primary);}
+.toggle::after{content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left .2s;}
+.toggle.on::after{left:21px;}
+
+@media(max-width:980px){
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:repeat(2,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+}
+@media(max-width:760px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:fixed; left:0; transform:translateX(-100%); transition:transform .25s; width:250px;}
+  .sidebar.show{transform:translateX(0);}
+  .hamburger{display:flex;}
+  .grid-4,.grid-3{grid-template-columns:repeat(2,1fr);}
+  .search-wrap{max-width:none;}
+  .lang-toggle{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg></div>
+      <div>
+        <div class="brand-name">MedixPro</div>
+        <div class="brand-tag" data-i18n="tagline">AI PHARMACY OS</div>
+      </div>
+    </div>
+
+    <div class="nav-group-label" data-i18n="nav_main">Main</div>
+    <button class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      <span data-i18n="nav_dashboard">Dashboard</span>
+    </button>
+    <button class="nav-item" data-page="catalog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg>
+      <span data-i18n="nav_catalog">Medicine Catalog</span>
+    </button>
+    <button class="nav-item" data-page="ai">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      <span data-i18n="nav_ai">AI Health Assistant</span>
+      <span class="badge">AI</span>
+    </button>
+    <button class="nav-item" data-page="symptom">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h4l2 8 4-16 2 8h4"/></svg>
+      <span data-i18n="nav_symptom">Symptom Checker</span>
+    </button>
+    <button class="nav-item" data-page="interactions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span data-i18n="nav_interact">Interaction Checker</span>
+    </button>
+    <button class="nav-item" data-page="dosage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6v4l4 12H5L9 7V3Z"/><path d="M8 15h8"/></svg>
+      <span data-i18n="nav_dosage">Dosage Calculator</span>
+    </button>
+
+    <div class="nav-group-label" data-i18n="nav_care">Care Network</div>
+    <button class="nav-item" data-page="hospitals">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M9 21V9M12 3v6M9 6h6"/></svg>
+      <span data-i18n="nav_hospitals">Hospitals</span>
+    </button>
+    <button class="nav-item" data-page="doctors">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span data-i18n="nav_doctors">Doctors</span>
+    </button>
+    <button class="nav-item" data-page="appointments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span data-i18n="nav_appt">Appointments</span>
+    </button>
+    <button class="nav-item" data-page="labs">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 2v6l-6 10a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3L15 8V2"/><path d="M9 2h6M8 14h8"/></svg>
+      <span data-i18n="nav_labs">Lab Tests</span>
+    </button>
+    <button class="nav-item" data-page="bloodbank">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2s7 7.5 7 12a7 7 0 0 1-14 0c0-4.5 7-12 7-12Z"/></svg>
+      <span data-i18n="nav_blood">Blood Bank</span>
+    </button>
+    <button class="nav-item" data-page="ambulance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="15" height="10" rx="1"/><path d="M16 10h4l3 3v4h-7"/><circle cx="6" cy="19" r="2"/><circle cx="17" cy="19" r="2"/><path d="M6 10v4M4 12h4"/></svg>
+      <span data-i18n="nav_ambulance">Ambulance</span>
+    </button>
+
+    <div class="nav-group-label" data-i18n="nav_account">My Account</div>
+    <button class="nav-item" data-page="orders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10"/></svg>
+      <span data-i18n="nav_orders">My Orders</span>
+    </button>
+    <button class="nav-item" data-page="prescriptions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6M9 15h6M9 11h3"/></svg>
+      <span data-i18n="nav_rx">Prescriptions</span>
+    </button>
+    <button class="nav-item" data-page="reminders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span data-i18n="nav_reminders">Medicine Reminders</span>
+    </button>
+    <button class="nav-item" data-page="family">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21c0-3.5 2.7-6 6-6s6 2.5 6 6M14 21c.3-2.6 2-4.5 4.5-4.5S22.7 18.4 23 21"/></svg>
+      <span data-i18n="nav_family">Family Profiles</span>
+    </button>
+    <button class="nav-item" data-page="insurance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5l-8-3Z"/></svg>
+      <span data-i18n="nav_insurance">Insurance Claims</span>
+    </button>
+    <button class="nav-item" data-page="records">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+      <span data-i18n="nav_records">Health Records</span>
+    </button>
+
+    <div class="nav-group-label" data-i18n="nav_admin">Pharmacy Admin</div>
+    <button class="nav-item" data-page="inventory">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8V5a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v3M3 8l1 12a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1l1-12M3 8h18"/></svg>
+      <span data-i18n="nav_inventory">Inventory &amp; Stock</span>
+    </button>
+    <button class="nav-item" data-page="analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+      <span data-i18n="nav_analytics">Sales Analytics</span>
+    </button>
+    <button class="nav-item" data-page="reviews">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1L12 2Z"/></svg>
+      <span data-i18n="nav_reviews">Reviews &amp; Ratings</span>
+    </button>
+    <button class="nav-item" data-page="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.36.5.6.94.66.44.06.94.34.94.34"/></svg>
+      <span data-i18n="nav_settings">Settings</span>
+    </button>
+
+    <div class="sidebar-foot">
+      <button class="sos-btn" onclick="triggerSOS()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span data-i18n="sos">EMERGENCY SOS</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <div class="topbar">
+      <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('show')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="globalSearch" placeholder="Search medicines, doctors, hospitals, lab tests…" oninput="handleGlobalSearch(this.value)" onfocus="handleGlobalSearch(this.value)">
+        <div class="search-results" id="searchResultsBox"></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="lang-toggle">
+          <button id="langEn" class="active" onclick="setLang('en')">EN</button>
+          <button id="langHi" onclick="setLang('hi')">हिं</button>
+        </div>
+        <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle dark mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>
+        </button>
+        <button class="icon-btn" onclick="openDrawer('notifDrawer')" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="dot" id="notifCount">3</span>
+        </button>
+        <button class="icon-btn" onclick="openDrawer('cartDrawer')" title="Cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+          <span class="dot" id="cartCount">0</span>
+        </button>
+        <div class="profile-chip" onclick="navigateTo('settings')" style="cursor:pointer">
+          <div class="av">RA</div>
+          <span data-i18n="profile_name">Rohit A.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" id="content">
+
+      <!-- ================= DASHBOARD ================= -->
+      <section class="page active" id="page-dashboard">
+        <div class="page-head">
+          <div>
+            <h1 data-i18n="dash_title">Good afternoon, Rohit 👋</h1>
+            <p data-i18n="dash_sub">Here's what's happening across your pharmacy network today.</p>
+          </div>
+          <button class="btn btn-primary" onclick="navigateTo('catalog')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            <span data-i18n="dash_new_order">New Order</span>
+          </button>
+        </div>
+
+        <div class="pulse-wrap">
+          <svg width="120" height="46" viewBox="0 0 120 46"><path class="pulse-line" d="M0 23 H20 L28 6 L36 40 L44 23 H60 L66 14 L72 32 L78 23 H120"/></svg>
+          <div>
+            <div style="font-weight:700; font-size:13.5px;" data-i18n="dash_ai_live">AI Health Engine — Live</div>
+            <div class="small-note" data-i18n="dash_ai_desc">Monitoring 12,480 SKUs, 340 prescriptions &amp; 58 live consultations right now.</div>
+          </div>
+        </div>
+
+        <div class="grid grid-4" style="margin-top:18px;">
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon" style="background:var(--primary-soft); color:var(--primary);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg></div><span class="stat-delta delta-up">+8.2%</span></div>
+            <div class="stat-val mono">12,480</div>
+            <div class="stat-label" data-i18n="stat_medicines">Medicines in Catalog</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon" style="background:var(--accent-soft); color:var(--accent);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/></svg></div><span class="stat-delta delta-up">+126</span></div>
+            <div class="stat-val mono" id="statOrders">842</div>
+            <div class="stat-label" data-i18n="stat_orders">Orders Today</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon" style="background:var(--warn-soft); color:var(--warn);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div><span class="stat-delta delta-up">Live</span></div>
+            <div class="stat-val mono">58</div>
+            <div class="stat-label" data-i18n="stat_doctors">Doctors Online</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top"><div class="stat-icon" style="background:var(--danger-soft); color:var(--danger);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div><span class="stat-delta delta-down">-3</span></div>
+            <div class="stat-val mono">14</div>
+            <div class="stat-label" data-i18n="stat_low">Low Stock Alerts</div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:22px; align-items:start;">
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="dash_weekly">Weekly Order Volume</h3>
+            <canvas id="dashChart" height="180"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="dash_categories">Top Categories</h3>
+            <canvas id="catChart" height="180"></canvas>
+          </div>
+        </div>
+
+        <h2 class="section-title" data-i18n="dash_recent">📦 Recent Orders</h2>
+        <div id="recentOrdersList"></div>
+      </section>
+
+      <!-- ================= CATALOG ================= -->
+      <section class="page" id="page-catalog">
+        <div class="page-head">
+          <div><h1 data-i18n="cat_title">Medicine Catalog</h1><p data-i18n="cat_sub">40,000+ verified medicines · Genuine &amp; AI-checked</p></div>
+        </div>
+        <div class="filters-row" id="catFilters"></div>
+        <div class="filters-row">
+          <select class="select" id="sortSelect" onchange="renderCatalog()">
+            <option value="relevance" data-i18n="sort_rel">Sort: Relevance</option>
+            <option value="lowhigh" data-i18n="sort_lh">Price: Low to High</option>
+            <option value="highlow" data-i18n="sort_hl">Price: High to Low</option>
+            <option value="rating" data-i18n="sort_rating">Rating</option>
+          </select>
+          <select class="select" onchange="filterType(this.value)">
+            <option value="all" data-i18n="type_all">All Types</option>
+            <option value="otc" data-i18n="type_otc">OTC</option>
+            <option value="rx" data-i18n="type_rx">Prescription Required</option>
+          </select>
+        </div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr));" id="catalogGrid"></div>
+      </section>
+
+      <!-- ================= AI ASSISTANT PAGE ================= -->
+      <section class="page" id="page-ai">
+        <div class="page-head"><div><h1 data-i18n="ai_title">AI Health Assistant</h1><p data-i18n="ai_sub">Rule-based guidance engine — always confirm with a licensed doctor for diagnosis.</p></div></div>
+        <div class="warn-banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          <span data-i18n="ai_disclaimer">This assistant gives general wellness information only. It is not a substitute for professional medical advice, diagnosis, or treatment.</span>
+        </div>
+        <div class="grid grid-2" style="align-items:start;">
+          <div class="card">
+            <h3 style="margin-bottom:10px; font-size:14px;" data-i18n="ai_try">Try asking about</h3>
+            <div class="filters-row">
+              <button class="chip-filter" onclick="askAI('I have a headache and mild fever')" data-i18n="ai_q1">Headache + fever</button>
+              <button class="chip-filter" onclick="askAI('What is a good alternative to Paracetamol')" data-i18n="ai_q2">Generic alternatives</button>
+              <button class="chip-filter" onclick="askAI('Can I take Ibuprofen with Aspirin')" data-i18n="ai_q3">Drug interactions</button>
+              <button class="chip-filter" onclick="askAI('Suggest a diet for diabetes')" data-i18n="ai_q4">Diabetes diet tips</button>
+            </div>
+            <p class="small-note" style="margin-top:14px;" data-i18n="ai_open">Open the chat bubble (bottom-right) anytime to talk to the assistant — it stays with you across every page.</p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:10px; font-size:14px;" data-i18n="ai_capabilities">Engine Capabilities</h3>
+            <div class="list-row" style="margin-bottom:8px;"><div class="av-lg">01</div><div class="grow"><h4 data-i18n="ai_c1_t">Symptom triage</h4><p data-i18n="ai_c1_d">Suggests likely OTC care or urgent-care escalation</p></div></div>
+            <div class="list-row" style="margin-bottom:8px;"><div class="av-lg">02</div><div class="grow"><h4 data-i18n="ai_c2_t">Generic matching</h4><p data-i18n="ai_c2_d">Finds cheaper generic equivalents from the catalog</p></div></div>
+            <div class="list-row" style="margin-bottom:0;"><div class="av-lg">03</div><div class="grow"><h4 data-i18n="ai_c3_t">Interaction awareness</h4><p data-i18n="ai_c3_d">Flags common risky combinations before checkout</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SYMPTOM CHECKER ================= -->
+      <section class="page" id="page-symptom">
+        <div class="page-head"><div><h1 data-i18n="sym_title">Symptom Checker</h1><p data-i18n="sym_sub">Select what you're feeling — get an instant care suggestion.</p></div></div>
+        <div class="card">
+          <div class="filters-row" id="symptomChips"></div>
+          <button class="btn btn-primary" style="margin-top:10px;" onclick="runSymptomCheck()" data-i18n="sym_check">Check Symptoms</button>
+          <div id="symptomResult" style="margin-top:18px;"></div>
+        </div>
+      </section>
+
+      <!-- ================= INTERACTION CHECKER ================= -->
+      <section class="page" id="page-interactions">
+        <div class="page-head"><div><h1 data-i18n="int_title">Drug Interaction Checker</h1><p data-i18n="int_sub">Check two medicines for known interaction risk.</p></div></div>
+        <div class="card">
+          <div class="form-grid">
+            <div class="field"><label data-i18n="int_med1">Medicine A</label><select id="intMedA"></select></div>
+            <div class="field"><label data-i18n="int_med2">Medicine B</label><select id="intMedB"></select></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;" onclick="checkInteraction()" data-i18n="int_btn">Check Interaction</button>
+          <div id="interactionResult" style="margin-top:16px;"></div>
+        </div>
+      </section>
+
+      <!-- ================= DOSAGE CALCULATOR ================= -->
+      <section class="page" id="page-dosage">
+        <div class="page-head"><div><h1 data-i18n="dose_title">Dosage Calculator</h1><p data-i18n="dose_sub">Rough weight-based estimate for common OTC medicine — always confirm with a pharmacist.</p></div></div>
+        <div class="card" style="max-width:520px;">
+          <div class="form-grid">
+            <div class="field"><label data-i18n="dose_med">Medicine</label>
+              <select id="doseMed"><option value="paracetamol">Paracetamol</option><option value="ibuprofen">Ibuprofen</option><option value="ors">ORS Rehydration</option></select>
+            </div>
+            <div class="field"><label data-i18n="dose_weight">Body Weight (kg)</label><input type="number" id="doseWeight" placeholder="e.g. 60"></div>
+            <div class="field"><label data-i18n="dose_age">Age</label><input type="number" id="doseAge" placeholder="e.g. 30"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;" onclick="calcDosage()" data-i18n="dose_btn">Calculate</button>
+          <div id="doseResult" style="margin-top:14px;"></div>
+        </div>
+      </section>
+
+      <!-- ================= HOSPITALS ================= -->
+      <section class="page" id="page-hospitals">
+        <div class="page-head"><div><h1 data-i18n="hosp_title">Hospitals Near You</h1><p data-i18n="hosp_sub">Verified network hospitals with live bed &amp; specialty info.</p></div>
+          <button class="btn btn-outline btn-sm" onclick="locateMe()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.5"/></svg><span data-i18n="use_location">Use my location</span></button>
+        </div>
+        <div id="hospitalList"></div>
+      </section>
+
+      <!-- ================= DOCTORS ================= -->
+      <section class="page" id="page-doctors">
+        <div class="page-head"><div><h1 data-i18n="doc_title">Doctors</h1><p data-i18n="doc_sub">Book a consultation, in-person or online.</p></div></div>
+        <div class="filters-row" id="specialtyFilters"></div>
+        <div class="grid grid-3" id="doctorList"></div>
+      </section>
+
+      <!-- ================= APPOINTMENTS ================= -->
+      <section class="page" id="page-appointments">
+        <div class="page-head"><div><h1 data-i18n="appt_title">Book an Appointment</h1><p data-i18n="appt_sub">Choose a doctor, date and time slot.</p></div></div>
+        <div class="grid grid-2" style="align-items:start;">
+          <div class="card">
+            <div class="form-grid">
+              <div class="field full"><label data-i18n="appt_doctor">Doctor</label><select id="apptDoctor"></select></div>
+              <div class="field"><label data-i18n="appt_date">Date</label><input type="date" id="apptDate"></div>
+              <div class="field"><label data-i18n="appt_time">Time Slot</label>
+                <select id="apptTime"><option>09:00 AM</option><option>11:30 AM</option><option>02:00 PM</option><option>05:30 PM</option><option>07:00 PM</option></select>
+              </div>
+              <div class="field full"><label data-i18n="appt_mode">Mode</label>
+                <select id="apptMode"><option data-i18n="mode_online">Video Consultation</option><option data-i18n="mode_inperson">In-person Visit</option></select>
+              </div>
+              <div class="field full"><label data-i18n="appt_notes">Notes for the doctor</label><textarea id="apptNotes" rows="3" placeholder="Briefly describe your concern..."></textarea></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:14px;" onclick="bookAppointment()" data-i18n="appt_confirm">Confirm Appointment</button>
+          </div>
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="appt_upcoming">Upcoming Appointments</h3>
+            <div id="apptList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= LAB TESTS ================= -->
+      <section class="page" id="page-labs">
+        <div class="page-head"><div><h1 data-i18n="lab_title">Lab Tests</h1><p data-i18n="lab_sub">Book diagnostic tests with home sample collection.</p></div></div>
+        <div class="grid grid-3" id="labList"></div>
+      </section>
+
+      <!-- ================= BLOOD BANK ================= -->
+      <section class="page" id="page-bloodbank">
+        <div class="page-head"><div><h1 data-i18n="blood_title">Blood Bank Locator</h1><p data-i18n="blood_sub">Find blood availability by group across partner blood banks.</p></div></div>
+        <div class="filters-row" id="bloodChips"></div>
+        <div id="bloodList"></div>
+      </section>
+
+      <!-- ================= AMBULANCE ================= -->
+      <section class="page" id="page-ambulance">
+        <div class="page-head"><div><h1 data-i18n="amb_title">Ambulance Booking</h1><p data-i18n="amb_sub">Request emergency or scheduled ambulance transport.</p></div></div>
+        <div class="grid grid-3">
+          <div class="card">
+            <h4 style="margin-bottom:6px;" data-i18n="amb_basic">Basic Life Support</h4>
+            <p class="small-note" data-i18n="amb_basic_d">Non-critical transfers, oxygen &amp; first-aid equipped.</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="bookAmbulance('BLS')" data-i18n="amb_book">Book Now</button>
+          </div>
+          <div class="card">
+            <h4 style="margin-bottom:6px;" data-i18n="amb_adv">Advanced Life Support</h4>
+            <p class="small-note" data-i18n="amb_adv_d">ICU-equipped with paramedic &amp; ventilator support.</p>
+            <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="bookAmbulance('ALS')" data-i18n="amb_book">Book Now</button>
+          </div>
+          <div class="card" style="border-color:var(--danger);">
+            <h4 style="margin-bottom:6px; color:var(--danger);" data-i18n="amb_emergency">Emergency Dispatch</h4>
+            <p class="small-note" data-i18n="amb_emergency_d">Immediate dispatch to your live location.</p>
+            <a class="btn btn-danger btn-sm" style="margin-top:12px;" href="tel:102"><span data-i18n="amb_call">Call 102 Now</span></a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ORDERS ================= -->
+      <section class="page" id="page-orders">
+        <div class="page-head"><div><h1 data-i18n="ord_title">My Orders</h1><p data-i18n="ord_sub">Track, reorder or request a return.</p></div></div>
+        <div class="tab-row">
+          <button class="tab-btn active" onclick="switchTab(this,'ordActive')" data-i18n="ord_active">Active</button>
+          <button class="tab-btn" onclick="switchTab(this,'ordPast')" data-i18n="ord_past">Past</button>
+          <button class="tab-btn" onclick="switchTab(this,'ordReturns')" data-i18n="ord_returns">Returns</button>
+        </div>
+        <div class="tab-panel active" id="ordActive">
+          <div class="card">
+            <h4 style="margin-bottom:10px;" data-i18n="ord_track_title">Order #MP-88421 — In Transit</h4>
+            <div class="timeline">
+              <div class="tl-step done"><div class="tl-dot">✓</div><span data-i18n="tl_placed">Placed</span></div>
+              <div class="tl-step done"><div class="tl-dot">✓</div><span data-i18n="tl_packed">Packed</span></div>
+              <div class="tl-step done"><div class="tl-dot">✓</div><span data-i18n="tl_shipped">Shipped</span></div>
+              <div class="tl-step"><div class="tl-dot">4</div><span data-i18n="tl_transit">Out for delivery</span></div>
+              <div class="tl-step"><div class="tl-dot">5</div><span data-i18n="tl_delivered">Delivered</span></div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="printInvoice()" data-i18n="ord_print">Print Invoice</button>
+          </div>
+        </div>
+        <div class="tab-panel" id="ordPast"><div id="pastOrdersList"></div></div>
+        <div class="tab-panel" id="ordReturns">
+          <div class="card">
+            <div class="field"><label data-i18n="ret_order">Order ID</label><input placeholder="MP-XXXXX" id="returnOrderId"></div>
+            <div class="field" style="margin-top:10px;"><label data-i18n="ret_reason">Reason</label>
+              <select id="returnReason"><option data-i18n="ret_r1">Wrong item received</option><option data-i18n="ret_r2">Damaged package</option><option data-i18n="ret_r3">No longer needed</option></select>
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="submitReturn()" data-i18n="ret_submit">Submit Return Request</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PRESCRIPTIONS ================= -->
+      <section class="page" id="page-prescriptions">
+        <div class="page-head"><div><h1 data-i18n="rx_title">Prescriptions</h1><p data-i18n="rx_sub">Upload once, order refills instantly with AI verification.</p></div></div>
+        <div class="grid grid-2" style="align-items:start;">
+          <div class="card">
+            <div id="dropZone" style="border:2px dashed var(--border); border-radius:14px; padding:34px 16px; text-align:center; cursor:pointer;" onclick="document.getElementById('rxFile').click()">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" style="margin:0 auto 10px;"><path d="M12 16V4M12 4 7 9M12 4l5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+              <p style="font-weight:600; font-size:13.5px;" data-i18n="rx_drop">Click to upload prescription image or PDF</p>
+              <p class="small-note" data-i18n="rx_drop_note">JPG, PNG or PDF up to 10MB</p>
+            </div>
+            <input type="file" id="rxFile" accept="image/*,.pdf" style="display:none" onchange="handleRxUpload(event)">
+            <div id="rxPreview" style="margin-top:14px;"></div>
+          </div>
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="rx_saved">Saved Prescriptions</h3>
+            <div id="rxList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= REMINDERS ================= -->
+      <section class="page" id="page-reminders">
+        <div class="page-head"><div><h1 data-i18n="rem_title">Medicine Reminders</h1><p data-i18n="rem_sub">Never miss a dose — set reminders for your daily medication.</p></div></div>
+        <div class="grid grid-2" style="align-items:start;">
+          <div class="card">
+            <div class="form-grid">
+              <div class="field full"><label data-i18n="rem_med">Medicine Name</label><input id="remMed" placeholder="e.g. Metformin 500mg"></div>
+              <div class="field"><label data-i18n="rem_time">Time</label><input type="time" id="remTime"></div>
+              <div class="field"><label data-i18n="rem_freq">Frequency</label><select id="remFreq"><option data-i18n="rem_daily">Daily</option><option data-i18n="rem_alt">Alternate Days</option><option data-i18n="rem_weekly">Weekly</option></select></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:14px;" onclick="addReminder()" data-i18n="rem_add">Add Reminder</button>
+          </div>
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="rem_active">Active Reminders</h3>
+            <div id="reminderList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= FAMILY ================= -->
+      <section class="page" id="page-family">
+        <div class="page-head"><div><h1 data-i18n="fam_title">Family Profiles</h1><p data-i18n="fam_sub">Manage orders and records for your whole family from one account.</p></div></div>
+        <div class="card">
+          <div id="familyChips"></div>
+          <div class="form-grid" style="margin-top:16px;">
+            <div class="field"><label data-i18n="fam_name">Name</label><input id="famName" placeholder="Full name"></div>
+            <div class="field"><label data-i18n="fam_rel">Relation</label><select id="famRel"><option>Parent</option><option>Spouse</option><option>Child</option><option>Sibling</option></select></div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="addFamily()" data-i18n="fam_add">Add Family Member</button>
+        </div>
+      </section>
+
+      <!-- ================= INSURANCE ================= -->
+      <section class="page" id="page-insurance">
+        <div class="page-head"><div><h1 data-i18n="ins_title">Insurance Claims</h1><p data-i18n="ins_sub">File and track cashless or reimbursement claims.</p></div></div>
+        <div class="card" style="max-width:560px;">
+          <div class="form-grid">
+            <div class="field full"><label data-i18n="ins_provider">Insurance Provider</label><input placeholder="e.g. Star Health, HDFC Ergo"></div>
+            <div class="field"><label data-i18n="ins_policy">Policy Number</label><input placeholder="POL-XXXXXXX"></div>
+            <div class="field"><label data-i18n="ins_amount">Claim Amount (₹)</label><input type="number" placeholder="0"></div>
+            <div class="field full"><label data-i18n="ins_type">Claim Type</label><select><option data-i18n="ins_cashless">Cashless</option><option data-i18n="ins_reimburse">Reimbursement</option></select></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;" onclick="submitClaim()" data-i18n="ins_submit">Submit Claim</button>
+        </div>
+      </section>
+
+      <!-- ================= RECORDS ================= -->
+      <section class="page" id="page-records">
+        <div class="page-head"><div><h1 data-i18n="rec_title">Health Records Vault</h1><p data-i18n="rec_sub">All your lab reports, prescriptions and scans, encrypted in one place.</p></div></div>
+        <div class="grid grid-3" id="recordsList"></div>
+      </section>
+
+      <!-- ================= INVENTORY (ADMIN) ================= -->
+      <section class="page" id="page-inventory">
+        <div class="page-head"><div><h1 data-i18n="inv_title">Inventory &amp; Stock</h1><p data-i18n="inv_sub">Pharmacy admin view — restock before you run out.</p></div></div>
+        <div id="inventoryTable"></div>
+      </section>
+
+      <!-- ================= ANALYTICS ================= -->
+      <section class="page" id="page-analytics">
+        <div class="page-head"><div><h1 data-i18n="an_title">Sales Analytics</h1><p data-i18n="an_sub">Revenue &amp; order trends across your pharmacy network.</p></div></div>
+        <div class="grid grid-2">
+          <div class="card"><h3 style="font-size:14px; margin-bottom:12px;" data-i18n="an_rev">Monthly Revenue (₹ Lakhs)</h3><canvas id="revChart" height="200"></canvas></div>
+          <div class="card"><h3 style="font-size:14px; margin-bottom:12px;" data-i18n="an_split">Order Split by Channel</h3><canvas id="channelChart" height="200"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ================= REVIEWS ================= -->
+      <section class="page" id="page-reviews">
+        <div class="page-head"><div><h1 data-i18n="rev_title2">Reviews &amp; Ratings</h1><p data-i18n="rev_sub2">What patients are saying about our medicines &amp; doctors.</p></div></div>
+        <div id="reviewList"></div>
+        <div class="card" style="margin-top:16px;">
+          <h4 style="margin-bottom:10px;" data-i18n="rev_leave">Leave a Review</h4>
+          <div class="filters-row" id="starPicker"></div>
+          <textarea id="reviewText" rows="3" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-family:inherit;" placeholder="Share your experience..."></textarea>
+          <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="submitReview()" data-i18n="rev_submit">Submit Review</button>
+        </div>
+      </section>
+
+      <!-- ================= SETTINGS ================= -->
+      <section class="page" id="page-settings">
+        <div class="page-head"><div><h1 data-i18n="set_title">Settings</h1><p data-i18n="set_sub">Manage your profile, preferences and support.</p></div></div>
+        <div class="grid grid-2" style="align-items:start;">
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="set_profile">Profile</h3>
+            <div class="form-grid">
+              <div class="field"><label data-i18n="set_fname">Full Name</label><input value="Rohit Anand"></div>
+              <div class="field"><label data-i18n="set_phone">Phone</label><input value="+91 98XXXXXX21"></div>
+              <div class="field full"><label data-i18n="set_email">Email</label><input value="rohit.anand@example.com"></div>
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="showToast('Profile updated')" data-i18n="set_save">Save Changes</button>
+
+            <h3 style="font-size:14px; margin:22px 0 12px;" data-i18n="set_prefs">Preferences</h3>
+            <div class="row-between"><span data-i18n="set_dark">Dark Mode</span><button class="toggle" id="toggleDark" onclick="toggleThemeSwitch(this)"></button></div>
+            <div class="row-between"><span data-i18n="set_autorefill">Auto-refill Subscriptions</span><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+            <div class="row-between"><span data-i18n="set_notif">Push Notifications</span><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+            <div class="row-between"><span data-i18n="set_promo">Promotional Emails</span><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+          </div>
+          <div class="card">
+            <h3 style="font-size:14px; margin-bottom:12px;" data-i18n="set_faq">Frequently Asked Questions</h3>
+            <div id="faqList"></div>
+            <h3 style="font-size:14px; margin:20px 0 10px;" data-i18n="set_contact">Contact Support</h3>
+            <textarea rows="3" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-family:inherit;" placeholder="Describe your issue..." id="supportMsg"></textarea>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="submitSupport()" data-i18n="set_send">Send Message</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CART DRAWER ===================== -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawers()"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head"><h3 data-i18n="cart_title">Your Cart</h3><button class="icon-btn" onclick="closeDrawers()">✕</button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot">
+    <div class="field" style="flex-direction:row; gap:8px; margin-bottom:10px;">
+      <input id="couponInput" placeholder="Coupon code" style="flex:1; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--ink);">
+      <button class="btn btn-outline btn-sm" onclick="applyCoupon()" data-i18n="cart_apply">Apply</button>
+    </div>
+    <div class="row-between"><span data-i18n="cart_subtotal">Subtotal</span><span class="mono" id="cartSubtotal">₹0</span></div>
+    <div class="row-between"><span data-i18n="cart_discount">Discount</span><span class="mono" id="cartDiscount">-₹0</span></div>
+    <div class="row-between" style="font-weight:700; font-size:15px; border-top:1px solid var(--border); padding-top:10px;"><span data-i18n="cart_total">Total</span><span class="mono" id="cartTotal">₹0</span></div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:10px;" onclick="checkout()" data-i18n="cart_checkout">Proceed to Checkout</button>
+  </div>
+</div>
+
+<!-- ===================== NOTIFICATIONS DRAWER ===================== -->
+<div class="drawer" id="notifDrawer">
+  <div class="drawer-head"><h3 data-i18n="notif_title">Notifications</h3><button class="icon-btn" onclick="closeDrawers()">✕</button></div>
+  <div class="drawer-body" id="notifBody"></div>
+</div>
+
+<!-- ===================== CHECKOUT MODAL ===================== -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <h3 data-i18n="co_title">🎉 Order Confirmed!</h3>
+    <p class="small-note" id="checkoutMsg" style="font-size:13px; margin-bottom:14px;"></p>
+    <div class="timeline">
+      <div class="tl-step done"><div class="tl-dot">✓</div><span data-i18n="tl_placed">Placed</span></div>
+      <div class="tl-step"><div class="tl-dot">2</div><span data-i18n="tl_packed">Packed</span></div>
+      <div class="tl-step"><div class="tl-dot">3</div><span data-i18n="tl_shipped">Shipped</span></div>
+      <div class="tl-step"><div class="tl-dot">4</div><span data-i18n="tl_delivered">Delivered</span></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="closeModal()" data-i18n="co_close">Great, thanks!</button>
+  </div>
+</div>
+
+<!-- ===================== AI CHAT WIDGET ===================== -->
+<button class="chat-fab" onclick="toggleChat()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-head">
+    <div class="pulse-dot"></div>
+    <div><div style="font-weight:700; font-size:13.5px;" data-i18n="chat_name">MedixPro AI Assistant</div><div style="font-size:11px; opacity:.85;" data-i18n="chat_status">Online · Responds instantly</div></div>
+    <button style="margin-left:auto; background:none; border:none; color:#fff; font-size:16px;" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-suggestions" id="chatSuggestions"></div>
+  <div class="chat-input-row">
+    <input id="chatInput" placeholder="Type your health question..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/></svg></button>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ============================================================
+   MedixPro — client-side data & logic (no backend required)
+   All state is in-memory (resets on refresh) so this file runs
+   completely standalone once deployed as a static site.
+   ============================================================ */
+
+/* ---------------- DATA ---------------- */
+const MEDICINES = [
+  {id:1,name:"Paracetamol 500mg",cat:"Pain Relief",price:25,old:35,rx:false,stock:420,rating:4.6,generic:"Acetaminophen"},
+  {id:2,name:"Ibuprofen 400mg",cat:"Pain Relief",price:40,old:0,rx:false,stock:12,rating:4.3,generic:"Ibuprofen"},
+  {id:3,name:"Amoxicillin 500mg",cat:"Antibiotics",price:85,old:0,rx:true,stock:150,rating:4.5,generic:"Amoxicillin"},
+  {id:4,name:"Cetirizine 10mg",cat:"Allergy",price:18,old:22,rx:false,stock:300,rating:4.4,generic:"Cetirizine"},
+  {id:5,name:"Metformin 500mg",cat:"Diabetes",price:32,old:0,rx:true,stock:8,rating:4.7,generic:"Metformin"},
+  {id:6,name:"Omeprazole 20mg",cat:"Digestive",price:55,old:65,rx:false,stock:210,rating:4.2,generic:"Omeprazole"},
+  {id:7,name:"Aspirin 75mg",cat:"Cardiac",price:15,old:0,rx:false,stock:500,rating:4.5,generic:"Aspirin"},
+  {id:8,name:"Vitamin D3 60K",cat:"Supplements",price:28,old:0,rx:false,stock:340,rating:4.8,generic:"Cholecalciferol"},
+  {id:9,name:"Azithromycin 250mg",cat:"Antibiotics",price:95,old:0,rx:true,stock:5,rating:4.3,generic:"Azithromycin"},
+  {id:10,name:"ORS Rehydration Sachet",cat:"Digestive",price:12,old:15,rx:false,stock:600,rating:4.9,generic:"Oral Rehydration Salts"},
+  {id:11,name:"Insulin Glargine",cat:"Diabetes",price:420,old:0,rx:true,stock:22,rating:4.6,generic:"Insulin Glargine"},
+  {id:12,name:"Atorvastatin 10mg",cat:"Cardiac",price:60,old:70,rx:true,stock:180,rating:4.4,generic:"Atorvastatin"},
+  {id:13,name:"Multivitamin Gummies",cat:"Supplements",price:220,old:260,rx:false,stock:90,rating:4.7,generic:"Multivitamin"},
+  {id:14,name:"Loratadine 10mg",cat:"Allergy",price:20,old:0,rx:false,stock:250,rating:4.1,generic:"Loratadine"},
+  {id:15,name:"Pantoprazole 40mg",cat:"Digestive",price:48,old:0,rx:false,stock:14,rating:4.3,generic:"Pantoprazole"},
+  {id:16,name:"Diclofenac Gel",cat:"Pain Relief",price:75,old:90,rx:false,stock:130,rating:4.5,generic:"Diclofenac"},
+  {id:17,name:"Salbutamol Inhaler",cat:"Respiratory",price:150,old:0,rx:true,stock:60,rating:4.6,generic:"Salbutamol"},
+  {id:18,name:"Amlodipine 5mg",cat:"Cardiac",price:38,old:0,rx:true,stock:200,rating:4.2,generic:"Amlodipine"},
+];
+const CATEGORIES = ["All","Pain Relief","Antibiotics","Allergy","Diabetes","Digestive","Cardiac","Supplements","Respiratory"];
+
+const HOSPITALS = [
+  {name:"Apollo Multispeciality Hospital",city:"Bhubaneswar",beds:38,specialty:"Cardiology, Oncology, Neurology",rating:4.6,distance:"2.1 km"},
+  {name:"SUM Ultimate Medicare",city:"Bhubaneswar",beds:12,specialty:"Trauma, Orthopedics, ICU",rating:4.4,distance:"3.4 km"},
+  {name:"AIIMS Bhubaneswar",city:"Bhubaneswar",beds:5,specialty:"Multi-specialty, Research",rating:4.8,distance:"6.7 km"},
+  {name:"Kalinga Institute of Medical Sciences",city:"Bhubaneswar",beds:20,specialty:"Cardiac, Nephrology",rating:4.5,distance:"5.2 km"},
+  {name:"CARE Hospitals",city:"Bhubaneswar",beds:0,specialty:"Emergency, Pediatrics",rating:4.3,distance:"4.0 km"},
+  {name:"Hi-Tech Medical College Hospital",city:"Bhubaneswar",beds:15,specialty:"General Medicine, Surgery",rating:4.1,distance:"7.8 km"},
+];
+
+const DOCTORS = [
+  {name:"Dr. Ananya Sharma",spec:"Cardiologist",exp:12,rating:4.8,fee:600,online:true},
+  {name:"Dr. Rajeev Menon",spec:"General Physician",exp:9,rating:4.6,fee:350,online:true},
+  {name:"Dr. Kavita Rao",spec:"Dermatologist",exp:7,rating:4.7,fee:450,online:true},
+  {name:"Dr. Sameer Iqbal",spec:"Pediatrician",exp:15,rating:4.9,fee:400,online:false},
+  {name:"Dr. Priya Nair",spec:"Gynecologist",exp:10,rating:4.5,fee:500,online:true},
+  {name:"Dr. Arvind Kulkarni",spec:"Orthopedic",exp:18,rating:4.6,fee:700,online:false},
+  {name:"Dr. Meera Joshi",spec:"Endocrinologist",exp:11,rating:4.7,fee:550,online:true},
+  {name:"Dr. Farhan Ahmed",spec:"Neurologist",exp:14,rating:4.8,fee:800,online:false},
+  {name:"Dr. Sunita Reddy",spec:"Psychiatrist",exp:8,rating:4.5,fee:600,online:true},
+];
+
+const LABS = [
+  {name:"Complete Blood Count (CBC)",price:299,time:"6 hrs"},
+  {name:"Lipid Profile",price:499,time:"12 hrs"},
+  {name:"HbA1c (Diabetes)",price:399,time:"8 hrs"},
+  {name:"Thyroid Profile (T3/T4/TSH)",price:449,time:"10 hrs"},
+  {name:"Liver Function Test",price:549,time:"12 hrs"},
+  {name:"Vitamin D Test",price:699,time:"24 hrs"},
+];
+
+const BLOOD_GROUPS = ["A+","A-","B+","B-","O+","O-","AB+","AB-"];
+const BLOOD_STOCK = {"A+":"High","A-":"Low","B+":"Medium","B-":"Low","O+":"High","O-":"Critical","AB+":"Medium","AB-":"Low"};
+
+const INTERACTIONS = [
+  {a:"Ibuprofen 400mg",b:"Aspirin 75mg",risk:"high",note:"Increases risk of gastrointestinal bleeding when combined."},
+  {a:"Amoxicillin 500mg",b:"Metformin 500mg",risk:"low",note:"No significant interaction reported; monitor as usual."},
+  {a:"Atorvastatin 10mg",b:"Azithromycin 250mg",risk:"medium",note:"May raise statin levels — space doses apart."},
+  {a:"Omeprazole 20mg",b:"Atorvastatin 10mg",risk:"low",note:"Generally safe combination."},
+  {a:"Aspirin 75mg",b:"Diclofenac Gel",risk:"medium",note:"Combined use may increase bleeding risk."},
+];
+
+let cart = [];
+let wishlist = new Set();
+let familyMembers = [{name:"Rohit Anand",rel:"Self"}];
+let reminders = [];
+let apptListData = [];
+let selectedRating = 5;
+let selectedSymptoms = new Set();
+let currentCategory = "All";
+let currentType = "all";
+
+/* ---------------- I18N ---------------- */
+const I18N = {
+  en:{
+    tagline:"AI PHARMACY OS", nav_main:"Main", nav_dashboard:"Dashboard", nav_catalog:"Medicine Catalog",
+    nav_ai:"AI Health Assistant", nav_symptom:"Symptom Checker", nav_interact:"Interaction Checker",
+    nav_dosage:"Dosage Calculator", nav_care:"Care Network", nav_hospitals:"Hospitals", nav_doctors:"Doctors",
+    nav_appt:"Appointments", nav_labs:"Lab Tests", nav_blood:"Blood Bank", nav_ambulance:"Ambulance",
+    nav_account:"My Account", nav_orders:"My Orders", nav_rx:"Prescriptions", nav_reminders:"Medicine Reminders",
+    nav_family:"Family Profiles", nav_insurance:"Insurance Claims", nav_records:"Health Records",
+    nav_admin:"Pharmacy Admin", nav_inventory:"Inventory & Stock", nav_analytics:"Sales Analytics",
+    nav_reviews:"Reviews & Ratings", nav_settings:"Settings", sos:"EMERGENCY SOS", profile_name:"Rohit A.",
+    dash_title:"Good afternoon, Rohit 👋", dash_sub:"Here's what's happening across your pharmacy network today.",
+    dash_new_order:"New Order", dash_ai_live:"AI Health Engine — Live",
+    dash_ai_desc:"Monitoring 12,480 SKUs, 340 prescriptions & 58 live consultations right now.",
+    stat_medicines:"Medicines in Catalog", stat_orders:"Orders Today", stat_doctors:"Doctors Online", stat_low:"Low Stock Alerts",
+    dash_weekly:"Weekly Order Volume", dash_categories:"Top Categories", dash_recent:"📦 Recent Orders",
+    cat_title:"Medicine Catalog", cat_sub:"40,000+ verified medicines · Genuine & AI-checked",
+    sort_rel:"Sort: Relevance", sort_lh:"Price: Low to High", sort_hl:"Price: High to Low", sort_rating:"Rating",
+    type_all:"All Types", type_otc:"OTC", type_rx:"Prescription Required",
+    ai_title:"AI Health Assistant", ai_sub:"Rule-based guidance engine — always confirm with a licensed doctor for diagnosis.",
+    ai_disclaimer:"This assistant gives general wellness information only. It is not a substitute for professional medical advice, diagnosis, or treatment.",
+    ai_try:"Try asking about", ai_q1:"Headache + fever", ai_q2:"Generic alternatives", ai_q3:"Drug interactions", ai_q4:"Diabetes diet tips",
+    ai_open:"Open the chat bubble (bottom-right) anytime to talk to the assistant — it stays with you across every page.",
+    ai_capabilities:"Engine Capabilities", ai_c1_t:"Symptom triage", ai_c1_d:"Suggests likely OTC care or urgent-care escalation",
+    ai_c2_t:"Generic matching", ai_c2_d:"Finds cheaper generic equivalents from the catalog",
+    ai_c3_t:"Interaction awareness", ai_c3_d:"Flags common risky combinations before checkout",
+    sym_title:"Symptom Checker", sym_sub:"Select what you're feeling — get an instant care suggestion.", sym_check:"Check Symptoms",
+    int_title:"Drug Interaction Checker", int_sub:"Check two medicines for known interaction risk.", int_med1:"Medicine A", int_med2:"Medicine B", int_btn:"Check Interaction",
+    dose_title:"Dosage Calculator", dose_sub:"Rough weight-based estimate for common OTC medicine — always confirm with a pharmacist.",
+    dose_med:"Medicine", dose_weight:"Body Weight (kg)", dose_age:"Age", dose_btn:"Calculate",
+    hosp_title:"Hospitals Near You", hosp_sub:"Verified network hospitals with live bed & specialty info.", use_location:"Use my location",
+    doc_title:"Doctors", doc_sub:"Book a consultation, in-person or online.",
+    appt_title:"Book an Appointment", appt_sub:"Choose a doctor, date and time slot.", appt_doctor:"Doctor", appt_date:"Date",
+    appt_time:"Time Slot", appt_mode:"Mode", mode_online:"Video Consultation", mode_inperson:"In-person Visit",
+    appt_notes:"Notes for the doctor", appt_confirm:"Confirm Appointment", appt_upcoming:"Upcoming Appointments",
+    lab_title:"Lab Tests", lab_sub:"Book diagnostic tests with home sample collection.",
+    blood_title:"Blood Bank Locator", blood_sub:"Find blood availability by group across partner blood banks.",
+    amb_title:"Ambulance Booking", amb_sub:"Request emergency or scheduled ambulance transport.",
+    amb_basic:"Basic Life Support", amb_basic_d:"Non-critical transfers, oxygen & first-aid equipped.",
+    amb_adv:"Advanced Life Support", amb_adv_d:"ICU-equipped with paramedic & ventilator support.",
+    amb_emergency:"Emergency Dispatch", amb_emergency_d:"Immediate dispatch to your live location.",
+    amb_book:"Book Now", amb_call:"Call 102 Now",
+    ord_title:"My Orders", ord_sub:"Track, reorder or request a return.", ord_active:"Active", ord_past:"Past", ord_returns:"Returns",
+    ord_track_title:"Order #MP-88421 — In Transit", ord_print:"Print Invoice",
+    tl_placed:"Placed", tl_packed:"Packed", tl_shipped:"Shipped", tl_transit:"Out for delivery", tl_delivered:"Delivered",
+    ret_order:"Order ID", ret_reason:"Reason", ret_r1:"Wrong item received", ret_r2:"Damaged package", ret_r3:"No longer needed", ret_submit:"Submit Return Request",
+    rx_title:"Prescriptions", rx_sub:"Upload once, order refills instantly with AI verification.",
+    rx_drop:"Click to upload prescription image or PDF", rx_drop_note:"JPG, PNG or PDF up to 10MB", rx_saved:"Saved Prescriptions",
+    rem_title:"Medicine Reminders", rem_sub:"Never miss a dose — set reminders for your daily medication.",
+    rem_med:"Medicine Name", rem_time:"Time", rem_freq:"Frequency", rem_daily:"Daily", rem_alt:"Alternate Days", rem_weekly:"Weekly",
+    rem_add:"Add Reminder", rem_active:"Active Reminders",
+    fam_title:"Family Profiles", fam_sub:"Manage orders and records for your whole family from one account.",
+    fam_name:"Name", fam_rel:"Relation", fam_add:"Add Family Member",
+    ins_title:"Insurance Claims", ins_sub:"File and track cashless or reimbursement claims.",
+    ins_provider:"Insurance Provider", ins_policy:"Policy Number", ins_amount:"Claim Amount (₹)", ins_type:"Claim Type",
+    ins_cashless:"Cashless", ins_reimburse:"Reimbursement", ins_submit:"Submit Claim",
+    rec_title:"Health Records Vault", rec_sub:"All your lab reports, prescriptions and scans, encrypted in one place.",
+    inv_title:"Inventory & Stock", inv_sub:"Pharmacy admin view — restock before you run out.",
+    an_title:"Sales Analytics", an_sub:"Revenue & order trends across your pharmacy network.",
+    an_rev:"Monthly Revenue (₹ Lakhs)", an_split:"Order Split by Channel",
+    rev_title2:"Reviews & Ratings", rev_sub2:"What patients are saying about our medicines & doctors.",
+    rev_leave:"Leave a Review", rev_submit:"Submit Review",
+    set_title:"Settings", set_sub:"Manage your profile, preferences and support.", set_profile:"Profile",
+    set_fname:"Full Name", set_phone:"Phone", set_email:"Email", set_save:"Save Changes", set_prefs:"Preferences",
+    set_dark:"Dark Mode", set_autorefill:"Auto-refill Subscriptions", set_notif:"Push Notifications", set_promo:"Promotional Emails",
+    set_faq:"Frequently Asked Questions", set_contact:"Contact Support", set_send:"Send Message",
+    cart_title:"Your Cart", cart_apply:"Apply", cart_subtotal:"Subtotal", cart_discount:"Discount", cart_total:"Total", cart_checkout:"Proceed to Checkout",
+    notif_title:"Notifications", co_title:"🎉 Order Confirmed!", co_close:"Great, thanks!",
+    chat_name:"MedixPro AI Assistant", chat_status:"Online · Responds instantly",
+  },
+  hi:{
+    tagline:"AI फार्मेसी ओएस", nav_main:"मुख्य", nav_dashboard:"डैशबोर्ड", nav_catalog:"दवा सूची",
+    nav_ai:"AI हेल्थ असिस्टेंट", nav_symptom:"लक्षण जांच", nav_interact:"इंटरैक्शन जांच",
+    nav_dosage:"डोज़ कैलकुलेटर", nav_care:"केयर नेटवर्क", nav_hospitals:"अस्पताल", nav_doctors:"डॉक्टर",
+    nav_appt:"अपॉइंटमेंट", nav_labs:"लैब टेस्ट", nav_blood:"ब्लड बैंक", nav_ambulance:"एम्बुलेंस",
+    nav_account:"मेरा खाता", nav_orders:"मेरे ऑर्डर", nav_rx:"प्रिस्क्रिप्शन", nav_reminders:"दवा रिमाइंडर",
+    nav_family:"परिवार प्रोफाइल", nav_insurance:"बीमा दावे", nav_records:"स्वास्थ्य रिकॉर्ड",
+    nav_admin:"फार्मेसी एडमिन", nav_inventory:"स्टॉक प्रबंधन", nav_analytics:"बिक्री विश्लेषण",
+    nav_reviews:"समीक्षाएं", nav_settings:"सेटिंग्स", sos:"आपातकालीन SOS", profile_name:"रोहित ए.",
+    dash_title:"नमस्ते, रोहित 👋", dash_sub:"आज आपके फार्मेसी नेटवर्क में यह हो रहा है।",
+    dash_new_order:"नया ऑर्डर", dash_ai_live:"AI हेल्थ इंजन — लाइव",
+    dash_ai_desc:"12,480 दवाइयाँ, 340 प्रिस्क्रिप्शन और 58 लाइव परामर्श की निगरानी अभी हो रही है।",
+    stat_medicines:"सूची में दवाएं", stat_orders:"आज के ऑर्डर", stat_doctors:"ऑनलाइन डॉक्टर", stat_low:"कम स्टॉक अलर्ट",
+    dash_weekly:"साप्ताहिक ऑर्डर वॉल्यूम", dash_categories:"शीर्ष श्रेणियाँ", dash_recent:"📦 हाल के ऑर्डर",
+    cat_title:"दवा सूची", cat_sub:"40,000+ सत्यापित दवाएं · असली और AI-जांचित",
+    sort_rel:"क्रमबद्ध करें: प्रासंगिकता", sort_lh:"कीमत: कम से ज़्यादा", sort_hl:"कीमत: ज़्यादा से कम", sort_rating:"रेटिंग",
+    type_all:"सभी प्रकार", type_otc:"बिना पर्ची", type_rx:"पर्ची आवश्यक",
+    ai_title:"AI हेल्थ असिस्टेंट", ai_sub:"नियम-आधारित मार्गदर्शन इंजन — निदान के लिए हमेशा लाइसेंस प्राप्त डॉक्टर से पुष्टि करें।",
+    ai_disclaimer:"यह असिस्टेंट केवल सामान्य स्वास्थ्य जानकारी देता है। यह पेशेवर चिकित्सा सलाह, निदान या उपचार का विकल्प नहीं है।",
+    ai_try:"इनके बारे में पूछें", ai_q1:"सिरदर्द + बुखार", ai_q2:"जेनेरिक विकल्प", ai_q3:"दवा इंटरैक्शन", ai_q4:"डायबिटीज डाइट टिप्स",
+    ai_open:"कभी भी चैट बबल (नीचे-दाएं) खोलें — यह हर पेज पर आपके साथ रहता है।",
+    ai_capabilities:"इंजन क्षमताएं", ai_c1_t:"लक्षण जांच", ai_c1_d:"संभावित OTC देखभाल या तत्काल देखभाल का सुझाव देता है",
+    ai_c2_t:"जेनेरिक मिलान", ai_c2_d:"सूची से सस्ते जेनेरिक विकल्प खोजता है",
+    ai_c3_t:"इंटरैक्शन जागरूकता", ai_c3_d:"चेकआउट से पहले सामान्य जोखिम भरे संयोजनों को चिन्हित करता है",
+    sym_title:"लक्षण जांच", sym_sub:"आप जो महसूस कर रहे हैं उसे चुनें — तुरंत सुझाव पाएं।", sym_check:"लक्षण जांचें",
+    int_title:"दवा इंटरैक्शन जांच", int_sub:"दो दवाओं के बीच जोखिम जांचें।", int_med1:"दवा A", int_med2:"दवा B", int_btn:"इंटरैक्शन जांचें",
+    dose_title:"डोज़ कैलकुलेटर", dose_sub:"सामान्य OTC दवा के लिए अनुमानित वज़न-आधारित खुराक — हमेशा फार्मासिस्ट से पुष्टि करें।",
+    dose_med:"दवा", dose_weight:"शरीर का वज़न (किग्रा)", dose_age:"आयु", dose_btn:"गणना करें",
+    hosp_title:"आपके पास अस्पताल", hosp_sub:"लाइव बेड और विशेषता जानकारी वाले सत्यापित अस्पताल।", use_location:"मेरा स्थान उपयोग करें",
+    doc_title:"डॉक्टर", doc_sub:"ऑनलाइन या व्यक्तिगत परामर्श बुक करें।",
+    appt_title:"अपॉइंटमेंट बुक करें", appt_sub:"डॉक्टर, तारीख और समय चुनें।", appt_doctor:"डॉक्टर", appt_date:"तारीख",
+    appt_time:"समय स्लॉट", appt_mode:"मोड", mode_online:"वीडियो परामर्श", mode_inperson:"व्यक्तिगत यात्रा",
+    appt_notes:"डॉक्टर के लिए नोट्स", appt_confirm:"अपॉइंटमेंट पक्का करें", appt_upcoming:"आगामी अपॉइंटमेंट",
+    lab_title:"लैब टेस्ट", lab_sub:"होम सैंपल कलेक्शन के साथ जांच बुक करें।",
+    blood_title:"ब्लड बैंक लोकेटर", blood_sub:"पार्टनर ब्लड बैंकों में समूह अनुसार उपलब्धता खोजें।",
+    amb_title:"एम्बुलेंस बुकिंग", amb_sub:"आपातकालीन या निर्धारित एम्बुलेंस अनुरोध करें।",
+    amb_basic:"बेसिक लाइफ सपोर्ट", amb_basic_d:"गैर-गंभीर स्थानांतरण, ऑक्सीजन व फर्स्ट-एड सुसज्जित।",
+    amb_adv:"एडवांस्ड लाइफ सपोर्ट", amb_adv_d:"ICU-सुसज्जित, पैरामेडिक व वेंटिलेटर सहित।",
+    amb_emergency:"आपातकालीन डिस्पैच", amb_emergency_d:"आपके लाइव स्थान पर तुरंत भेजा जाएगा।",
+    amb_book:"अभी बुक करें", amb_call:"102 पर कॉल करें",
+    ord_title:"मेरे ऑर्डर", ord_sub:"ट्रैक करें, दोबारा ऑर्डर करें या वापसी का अनुरोध करें।", ord_active:"सक्रिय", ord_past:"पिछले", ord_returns:"वापसी",
+    ord_track_title:"ऑर्डर #MP-88421 — ट्रांज़िट में", ord_print:"इनवॉइस प्रिंट करें",
+    tl_placed:"दिया गया", tl_packed:"पैक हुआ", tl_shipped:"भेजा गया", tl_transit:"डिलीवरी के लिए निकला", tl_delivered:"डिलीवर हुआ",
+    ret_order:"ऑर्डर ID", ret_reason:"कारण", ret_r1:"गलत आइटम मिला", ret_r2:"पैकेज क्षतिग्रस्त", ret_r3:"अब आवश्यकता नहीं", ret_submit:"वापसी अनुरोध भेजें",
+    rx_title:"प्रिस्क्रिप्शन", rx_sub:"एक बार अपलोड करें, AI सत्यापन के साथ तुरंत रीफिल ऑर्डर करें।",
+    rx_drop:"प्रिस्क्रिप्शन इमेज या PDF अपलोड करने के लिए क्लिक करें", rx_drop_note:"JPG, PNG या PDF 10MB तक", rx_saved:"सहेजे गए प्रिस्क्रिप्शन",
+    rem_title:"दवा रिमाइंडर", rem_sub:"कोई खुराक न चूकें — अपनी दैनिक दवा के लिए रिमाइंडर सेट करें।",
+    rem_med:"दवा का नाम", rem_time:"समय", rem_freq:"आवृत्ति", rem_daily:"रोज़ाना", rem_alt:"एक दिन छोड़कर", rem_weekly:"साप्ताहिक",
+    rem_add:"रिमाइंडर जोड़ें", rem_active:"सक्रिय रिमाइंडर",
+    fam_title:"परिवार प्रोफाइल", fam_sub:"एक ही खाते से पूरे परिवार के ऑर्डर और रिकॉर्ड प्रबंधित करें।",
+    fam_name:"नाम", fam_rel:"रिश्ता", fam_add:"सदस्य जोड़ें",
+    ins_title:"बीमा दावे", ins_sub:"कैशलेस या प्रतिपूर्ति दावे दर्ज करें और ट्रैक करें।",
+    ins_provider:"बीमा प्रदाता", ins_policy:"पॉलिसी नंबर", ins_amount:"दावा राशि (₹)", ins_type:"दावा प्रकार",
+    ins_cashless:"कैशलेस", ins_reimburse:"प्रतिपूर्ति", ins_submit:"दावा जमा करें",
+    rec_title:"स्वास्थ्य रिकॉर्ड वॉल्ट", rec_sub:"आपकी सभी लैब रिपोर्ट, प्रिस्क्रिप्शन और स्कैन एक ही सुरक्षित जगह पर।",
+    inv_title:"स्टॉक प्रबंधन", inv_sub:"फार्मेसी एडमिन व्यू — स्टॉक खत्म होने से पहले रीस्टॉक करें।",
+    an_title:"बिक्री विश्लेषण", an_sub:"आपके फार्मेसी नेटवर्क में राजस्व और ऑर्डर रुझान।",
+    an_rev:"मासिक राजस्व (₹ लाख)", an_split:"चैनल के अनुसार ऑर्डर विभाजन",
+    rev_title2:"समीक्षाएं और रेटिंग", rev_sub2:"मरीज़ हमारी दवाओं और डॉक्टरों के बारे में क्या कह रहे हैं।",
+    rev_leave:"समीक्षा दें", rev_submit:"समीक्षा जमा करें",
+    set_title:"सेटिंग्स", set_sub:"अपनी प्रोफ़ाइल, प्राथमिकताएं और सहायता प्रबंधित करें।", set_profile:"प्रोफ़ाइल",
+    set_fname:"पूरा नाम", set_phone:"फ़ोन", set_email:"ईमेल", set_save:"बदलाव सहेजें", set_prefs:"प्राथमिकताएं",
+    set_dark:"डार्क मोड", set_autorefill:"ऑटो-रीफिल सब्सक्रिप्शन", set_notif:"पुश नोटिफिकेशन", set_promo:"प्रचार ईमेल",
+    set_faq:"अक्सर पूछे जाने वाले प्रश्न", set_contact:"सहायता से संपर्क करें", set_send:"संदेश भेजें",
+    cart_title:"आपकी कार्ट", cart_apply:"लागू करें", cart_subtotal:"उप-योग", cart_discount:"छूट", cart_total:"कुल", cart_checkout:"चेकआउट करें",
+    notif_title:"सूचनाएं", co_title:"🎉 ऑर्डर पक्का हुआ!", co_close:"बढ़िया, धन्यवाद!",
+    chat_name:"MedixPro AI असिस्टेंट", chat_status:"ऑनलाइन · तुरंत जवाब देता है",
+  }
+};
+function setLang(lang){
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('langEn').classList.toggle('active', lang==='en');
+  document.getElementById('langHi').classList.toggle('active', lang==='hi');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(I18N[lang][key]) el.innerHTML = I18N[lang][key];
+  });
+}
+
+/* ---------------- NAVIGATION ---------------- */
+function navigateTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const btn = document.querySelector('.nav-item[data-page="'+page+'"]');
+  if(btn) btn.classList.add('active');
+  document.getElementById('sidebar').classList.remove('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.nav-item[data-page]').forEach(btn=>{
+  btn.addEventListener('click', ()=>navigateTo(btn.getAttribute('data-page')));
+});
+
+/* ---------------- TOASTS ---------------- */
+function showToast(msg){
+  const wrap = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className='toast';
+  t.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg><span>'+msg+'</span>';
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; setTimeout(()=>t.remove(),250); }, 2600);
+}
+
+/* ---------------- THEME ---------------- */
+function toggleTheme(){
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('toggleDark').classList.toggle('on', next==='dark');
+}
+function toggleThemeSwitch(el){ el.classList.toggle('on'); toggleTheme(); }
+
+/* ---------------- CATALOG ---------------- */
+function renderCatFilters(){
+  const box = document.getElementById('catFilters');
+  box.innerHTML = CATEGORIES.map(c=>`<button class="chip-filter ${c===currentCategory?'active':''}" onclick="setCategory('${c}')">${c}</button>`).join('');
+}
+function setCategory(c){ currentCategory=c; renderCatFilters(); renderCatalog(); }
+function filterType(t){ currentType=t; renderCatalog(); }
+function medIcon(){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg>'; }
+function renderCatalog(){
+  let list = MEDICINES.filter(m => (currentCategory==='All'||m.cat===currentCategory) && (currentType==='all' || (currentType==='rx'?m.rx:!m.rx)) );
+  const sort = document.getElementById('sortSelect').value;
+  if(sort==='lowhigh') list = [...list].sort((a,b)=>a.price-b.price);
+  if(sort==='highlow') list = [...list].sort((a,b)=>b.price-a.price);
+  if(sort==='rating') list = [...list].sort((a,b)=>b.rating-a.rating);
+  document.getElementById('catalogGrid').innerHTML = list.map(m=>`
+    <div class="med-card">
+      <button class="wish-btn ${wishlist.has(m.id)?'active':''}" onclick="toggleWish(${m.id}, this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="${wishlist.has(m.id)?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+      </button>
+      <div class="med-thumb">${medIcon()}</div>
+      <div class="med-name">${m.name}</div>
+      <div class="med-meta">${m.cat} · <span class="stars">★ ${m.rating}</span></div>
+      <div class="med-tags">
+        <span class="tag ${m.rx?'rx':'otc'}">${m.rx?'Rx':'OTC'}</span>
+        ${m.stock<20?'<span class="tag low">Low Stock</span>':''}
+      </div>
+      <div class="med-price-row">
+        <div class="med-price mono">₹${m.price}${m.old?'<span class="old">₹'+m.old+'</span>':''}</div>
+        <button class="btn btn-primary btn-sm" onclick="addToCart(${m.id})">+ Cart</button>
+      </div>
+    </div>`).join('') || '<div class="empty-state">No medicines match these filters.</div>';
+}
+
+/* ---------------- CART ---------------- */
+function addToCart(id){
+  const med = MEDICINES.find(m=>m.id===id);
+  const existing = cart.find(c=>c.id===id);
+  if(existing) existing.qty++; else cart.push({...med, qty:1});
+  updateCartUI();
+  showToast(med.name+' added to cart');
+}
+function toggleWish(id, el){
+  if(wishlist.has(id)){ wishlist.delete(id); el.classList.remove('active'); showToast('Removed from wishlist'); }
+  else { wishlist.add(id); el.classList.add('active'); showToast('Added to wishlist ❤'); }
+}
+function changeQty(id, delta){
+  const item = cart.find(c=>c.id===id);
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty<=0) cart = cart.filter(c=>c.id!==id);
+  updateCartUI();
+}
+let couponDiscount = 0;
+function applyCoupon(){
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  if(code==='HEALTH10'){ couponDiscount=0.10; showToast('Coupon applied — 10% off!'); }
+  else if(code==='FIRST50'){ couponDiscount=0.50; showToast('Welcome coupon applied — 50% off!'); }
+  else { couponDiscount=0; showToast('Invalid coupon code'); }
+  updateCartUI();
+}
+function updateCartUI(){
+  const body = document.getElementById('cartBody');
+  document.getElementById('cartCount').textContent = cart.reduce((a,c)=>a+c.qty,0);
+  if(cart.length===0){
+    body.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg><p>Your cart is empty</p></div>';
+  } else {
+    body.innerHTML = cart.map(c=>`
+      <div class="cart-item">
+        <div class="ci-thumb">${medIcon()}</div>
+        <div style="flex:1;">
+          <div style="font-weight:600; font-size:13px;">${c.name}</div>
+          <div class="mono" style="font-size:12.5px; color:var(--muted);">₹${c.price} × ${c.qty}</div>
+        </div>
+        <div class="qty-ctrl">
+          <button onclick="changeQty(${c.id},-1)">−</button><span style="font-size:12.5px;">${c.qty}</span><button onclick="changeQty(${c.id},1)">+</button>
+        </div>
+      </div>`).join('');
+  }
+  const subtotal = cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const discount = subtotal*couponDiscount;
+  document.getElementById('cartSubtotal').textContent = '₹'+subtotal.toFixed(0);
+  document.getElementById('cartDiscount').textContent = '-₹'+discount.toFixed(0);
+  document.getElementById('cartTotal').textContent = '₹'+(subtotal-discount).toFixed(0);
+}
+function checkout(){
+  if(cart.length===0){ showToast('Your cart is empty'); return; }
+  const total = document.getElementById('cartTotal').textContent;
+  document.getElementById('checkoutMsg').textContent = 'Order total '+total+' — confirmation sent to your registered mobile number.';
+  document.getElementById('checkoutModal').classList.add('show');
+  cart = []; couponDiscount = 0; updateCartUI(); closeDrawers();
+}
+function closeModal(){ document.getElementById('checkoutModal').classList.remove('show'); }
+function printInvoice(){ window.print(); }
+
+/* ---------------- DRAWERS ---------------- */
+function openDrawer(id){
+  document.getElementById('drawerOverlay').classList.add('show');
+  document.getElementById(id).classList.add('show');
+}
+function closeDrawers(){
+  document.getElementById('drawerOverlay').classList.remove('show');
+  document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('show'));
+}
+
+/* ---------------- NOTIFICATIONS ---------------- */
+const NOTIFS = [
+  {icon:'💊', text:'Your Metformin refill is due tomorrow.'},
+  {icon:'🚚', text:'Order #MP-88421 is out for delivery.'},
+  {icon:'🩺', text:'Dr. Ananya Sharma confirmed your appointment.'},
+];
+document.getElementById('notifBody').innerHTML = NOTIFS.map(n=>`<div class="list-row"><div class="av-lg">${n.icon}</div><div class="grow"><p style="color:var(--ink); font-size:13px;">${n.text}</p></div></div>`).join('');
+
+/* ---------------- SEARCH ---------------- */
+function handleGlobalSearch(q){
+  const box = document.getElementById('searchResultsBox');
+  if(!q){ box.classList.remove('show'); return; }
+  const ql = q.toLowerCase();
+  let results = [];
+  MEDICINES.filter(m=>m.name.toLowerCase().includes(ql)).slice(0,4).forEach(m=>results.push({label:m.name, tag:'Medicine', action:()=>navigateTo('catalog')}));
+  DOCTORS.filter(d=>d.name.toLowerCase().includes(ql)||d.spec.toLowerCase().includes(ql)).slice(0,3).forEach(d=>results.push({label:d.name+' — '+d.spec, tag:'Doctor', action:()=>navigateTo('doctors')}));
+  HOSPITALS.filter(h=>h.name.toLowerCase().includes(ql)).slice(0,3).forEach(h=>results.push({label:h.name, tag:'Hospital', action:()=>navigateTo('hospitals')}));
+  if(results.length===0){ box.innerHTML='<div class="sr-item">No results found</div>'; }
+  else box.innerHTML = results.map((r,i)=>`<div class="sr-item" onclick="globalSearchGo(${i})"><span>${r.label}</span><span class="sr-tag">${r.tag}</span></div>`).join('');
+  window._searchResults = results;
+  box.classList.add('show');
+}
+function globalSearchGo(i){ window._searchResults[i].action(); document.getElementById('searchResultsBox').classList.remove('show'); document.getElementById('globalSearch').value=''; }
+document.addEventListener('click', (e)=>{ if(!e.target.closest('.search-wrap')) document.getElementById('searchResultsBox').classList.remove('show'); });
+
+/* ---------------- HOSPITALS ---------------- */
+function renderHospitals(){
+  document.getElementById('hospitalList').innerHTML = HOSPITALS.map(h=>`
+    <div class="list-row">
+      <div class="av-lg">🏥</div>
+      <div class="grow">
+        <h4>${h.name}</h4>
+        <p>${h.specialty} · ${h.distance} away</p>
+      </div>
+      <div class="actions" style="flex-direction:column; align-items:flex-end; gap:6px;">
+        <span class="status-pill ${h.beds===0?'pill-red':h.beds<10?'pill-amber':'pill-green'}">${h.beds===0?'No ICU beds':h.beds+' beds free'}</span>
+        <button class="btn btn-outline btn-sm" onclick="showToast('Directions opened for ${h.name}')">Directions</button>
+      </div>
+    </div>`).join('');
+}
+function locateMe(){
+  if(!navigator.geolocation){ showToast('Geolocation not supported on this device'); return; }
+  showToast('Locating you…');
+  navigator.geolocation.getCurrentPosition(
+    ()=>showToast('Location found — showing nearest hospitals first'),
+    ()=>showToast('Location access denied — showing default list')
+  );
+}
+
+/* ---------------- DOCTORS ---------------- */
+let currentSpecialty = 'All';
+function renderSpecialtyFilters(){
+  const specs = ['All', ...new Set(DOCTORS.map(d=>d.spec))];
+  document.getElementById('specialtyFilters').innerHTML = specs.map(s=>`<button class="chip-filter ${s===currentSpecialty?'active':''}" onclick="setSpecialty('${s}')">${s}</button>`).join('');
+}
+function setSpecialty(s){ currentSpecialty=s; renderSpecialtyFilters(); renderDoctors(); }
+function renderDoctors(){
+  const list = DOCTORS.filter(d=>currentSpecialty==='All'||d.spec===currentSpecialty);
+  document.getElementById('doctorList').innerHTML = list.map(d=>`
+    <div class="card">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="av-lg" style="width:50px;height:50px;">${d.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+        <div>
+          <h4 style="font-size:14px;">${d.name}</h4>
+          <p class="small-note">${d.spec} · ${d.exp} yrs exp</p>
+        </div>
+      </div>
+      <div class="row-between" style="margin-top:12px;">
+        <span class="stars">★ ${d.rating}</span>
+        <span class="mono" style="font-weight:700;">₹${d.fee}</span>
+      </div>
+      <span class="status-pill ${d.online?'pill-green':'pill-amber'}" style="margin-top:8px; width:fit-content;">${d.online?'Online now':'In-person only'}</span>
+      <button class="btn btn-primary btn-sm" style="width:100%; justify-content:center; margin-top:10px;" onclick="navigateTo('appointments'); prefillDoctor('${d.name}')">Book Appointment</button>
+    </div>`).join('');
+}
+function prefillDoctor(name){ document.getElementById('apptDoctor').value = name; }
+
+/* ---------------- APPOINTMENTS ---------------- */
+function fillDoctorSelect(){
+  document.getElementById('apptDoctor').innerHTML = DOCTORS.map(d=>`<option>${d.name}</option>`).join('');
+}
+function bookAppointment(){
+  const doctor = document.getElementById('apptDoctor').value;
+  const date = document.getElementById('apptDate').value || 'TBD';
+  const time = document.getElementById('apptTime').value;
+  apptListData.unshift({doctor, date, time});
+  renderAppts();
+  showToast('Appointment booked with '+doctor);
+}
+function renderAppts(){
+  document.getElementById('apptList').innerHTML = apptListData.length ? apptListData.map(a=>`
+    <div class="list-row"><div class="av-lg">📅</div><div class="grow"><h4>${a.doctor}</h4><p>${a.date} · ${a.time}</p></div><span class="status-pill pill-green">Confirmed</span></div>
+  `).join('') : '<div class="empty-state">No appointments booked yet.</div>';
+}
+
+/* ---------------- LABS ---------------- */
+function renderLabs(){
+  document.getElementById('labList').innerHTML = LABS.map(l=>`
+    <div class="card">
+      <h4 style="font-size:14px;">${l.name}</h4>
+      <p class="small-note">Report in ${l.time} · Home collection available</p>
+      <div class="row-between" style="margin-top:10px;">
+        <span class="mono" style="font-weight:700;">₹${l.price}</span>
+        <button class="btn btn-primary btn-sm" onclick="showToast('${l.name} booked — a phlebotomist will visit you')">Book</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- BLOOD BANK ---------------- */
+let selectedBloodGroup = null;
+function renderBloodChips(){
+  document.getElementById('bloodChips').innerHTML = BLOOD_GROUPS.map(g=>`<button class="chip-filter ${g===selectedBloodGroup?'active':''}" onclick="pickBlood('${g}')">${g}</button>`).join('');
+}
+function pickBlood(g){
+  selectedBloodGroup=g; renderBloodChips();
+  const level = BLOOD_STOCK[g];
+  const pillClass = level==='Critical'?'pill-red':level==='Low'?'pill-amber':'pill-green';
+  document.getElementById('bloodList').innerHTML = `
+    <div class="list-row"><div class="av-lg">🩸</div><div class="grow"><h4>${g} Blood Group</h4><p>Availability across 6 partner blood banks in your city</p></div><span class="status-pill ${pillClass}">${level}</span></div>
+    <div class="list-row"><div class="av-lg">🏥</div><div class="grow"><h4>Red Cross Blood Bank</h4><p>4.2 km away · Open 24 hours</p></div><button class="btn btn-outline btn-sm" onclick="showToast('Request sent to Red Cross Blood Bank')">Request</button></div>
+    <div class="list-row"><div class="av-lg">🏥</div><div class="grow"><h4>City Central Blood Bank</h4><p>6.5 km away · Open till 8 PM</p></div><button class="btn btn-outline btn-sm" onclick="showToast('Request sent to City Central Blood Bank')">Request</button></div>
+  `;
+}
+
+/* ---------------- AMBULANCE ---------------- */
+function bookAmbulance(type){ showToast((type==='BLS'?'Basic':'Advanced')+' Life Support ambulance requested — dispatch ETA 12 mins'); }
+
+/* ---------------- SYMPTOM CHECKER ---------------- */
+const SYMPTOM_LIST = ["Fever","Headache","Cough","Sore Throat","Fatigue","Nausea","Body Ache","Shortness of Breath","Stomach Pain","Dizziness"];
+function renderSymptomChips(){
+  document.getElementById('symptomChips').innerHTML = SYMPTOM_LIST.map(s=>`<button class="chip-filter" onclick="toggleSymptom('${s}', this)">${s}</button>`).join('');
+}
+function toggleSymptom(s, el){
+  if(selectedSymptoms.has(s)){ selectedSymptoms.delete(s); el.classList.remove('active'); }
+  else { selectedSymptoms.add(s); el.classList.add('active'); }
+}
+function runSymptomCheck(){
+  const box = document.getElementById('symptomResult');
+  if(selectedSymptoms.size===0){ box.innerHTML = '<div class="warn-banner">Please select at least one symptom.</div>'; return; }
+  const s = [...selectedSymptoms];
+  let urgency = 'low', advice = 'Rest, stay hydrated, and monitor your symptoms. OTC medicine like Paracetamol may help with mild discomfort.';
+  if(s.includes('Shortness of Breath') || (s.includes('Fever') && s.includes('Body Ache') && s.length>=3)){
+    urgency='high'; advice='Your combination of symptoms could indicate something more serious. Please consult a doctor or visit urgent care soon.';
+  } else if(s.length>=3){
+    urgency='medium'; advice='Multiple symptoms detected. An online consultation with a General Physician is recommended within 24 hours.';
+  }
+  const pillClass = urgency==='high'?'pill-red':urgency==='medium'?'pill-amber':'pill-green';
+  box.innerHTML = `
+    <div class="list-row">
+      <div class="av-lg">🩺</div>
+      <div class="grow"><h4>Selected: ${s.join(', ')}</h4><p>${advice}</p></div>
+      <span class="status-pill ${pillClass}">${urgency.toUpperCase()} urgency</span>
+    </div>
+    ${urgency!=='low' ? '<button class="btn btn-primary btn-sm" onclick="navigateTo(\'doctors\')">Find a Doctor</button>' : '<button class="btn btn-outline btn-sm" onclick="navigateTo(\'catalog\')">Browse OTC Medicine</button>'}
+  `;
+}
+
+/* ---------------- INTERACTION CHECKER ---------------- */
+function fillInteractionSelects(){
+  const opts = MEDICINES.map(m=>`<option>${m.name}</option>`).join('');
+  document.getElementById('intMedA').innerHTML = opts;
+  document.getElementById('intMedB').innerHTML = opts;
+}
+function checkInteraction(){
+  const a = document.getElementById('intMedA').value;
+  const b = document.getElementById('intMedB').value;
+  const box = document.getElementById('interactionResult');
+  if(a===b){ box.innerHTML = '<div class="warn-banner">Please select two different medicines.</div>'; return; }
+  const found = INTERACTIONS.find(i=>(i.a===a&&i.b===b)||(i.a===b&&i.b===a));
+  if(found){
+    const pillClass = found.risk==='high'?'pill-red':found.risk==='medium'?'pill-amber':'pill-green';
+    box.innerHTML = `<div class="list-row"><div class="av-lg">⚠️</div><div class="grow"><h4>${a} + ${b}</h4><p>${found.note}</p></div><span class="status-pill ${pillClass}">${found.risk.toUpperCase()} risk</span></div>`;
+  } else {
+    box.innerHTML = `<div class="list-row"><div class="av-lg">✅</div><div class="grow"><h4>${a} + ${b}</h4><p>No known interaction on record between these two — but always check with your pharmacist.</p></div><span class="status-pill pill-green">No data</span></div>`;
+  }
+}
+
+/* ---------------- DOSAGE CALCULATOR ---------------- */
+function calcDosage(){
+  const med = document.getElementById('doseMed').value;
+  const weight = parseFloat(document.getElementById('doseWeight').value);
+  const age = parseFloat(document.getElementById('doseAge').value);
+  const box = document.getElementById('doseResult');
+  if(!weight || !age){ box.innerHTML = '<div class="warn-banner">Please enter both weight and age.</div>'; return; }
+  if(age<12){ box.innerHTML = '<div class="warn-banner">For children under 12, dosage must be prescribed by a pediatrician. Please consult a doctor.</div>'; return; }
+  let dose='';
+  if(med==='paracetamol') dose = Math.min(weight*10,1000).toFixed(0)+' mg, up to 4 times a day (max 4000mg/day)';
+  if(med==='ibuprofen') dose = Math.min(weight*6,400).toFixed(0)+' mg, every 6-8 hours (max 1200mg/day OTC)';
+  if(med==='ors') dose = 'Approx. '+(weight*10).toFixed(0)+' ml after every loose stool';
+  box.innerHTML = `<div class="list-row"><div class="av-lg">💊</div><div class="grow"><h4>Suggested dose</h4><p>${dose}</p></div></div><p class="small-note">This is an estimate only, not a prescription. Confirm with a pharmacist or doctor before use.</p>`;
+}
+
+/* ---------------- PRESCRIPTIONS ---------------- */
+let rxItems = [];
+function handleRxUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const item = {name:file.name, date:new Date().toLocaleDateString()};
+  rxItems.unshift(item);
+  document.getElementById('rxPreview').innerHTML = `<div class="list-row"><div class="av-lg">📄</div><div class="grow"><h4>${file.name}</h4><p>Uploaded — AI verification in progress…</p></div></div>`;
+  setTimeout(()=>{
+    document.getElementById('rxPreview').innerHTML = `<div class="list-row"><div class="av-lg">✅</div><div class="grow"><h4>${file.name}</h4><p>Verified — matched to Dr. Ananya Sharma's format</p></div><span class="status-pill pill-green">Verified</span></div>`;
+    renderRxList();
+    showToast('Prescription verified successfully');
+  }, 1400);
+}
+function renderRxList(){
+  document.getElementById('rxList').innerHTML = rxItems.length ? rxItems.map(r=>`<div class="list-row"><div class="av-lg">📄</div><div class="grow"><h4>${r.name}</h4><p>Uploaded ${r.date}</p></div><button class="btn btn-outline btn-sm" onclick="showToast('Reorder placed from prescription')">Reorder</button></div>`).join('') : '<div class="empty-state">No prescriptions uploaded yet.</div>';
+}
+
+/* ---------------- REMINDERS ---------------- */
+function addReminder(){
+  const med = document.getElementById('remMed').value;
+  const time = document.getElementById('remTime').value;
+  const freq = document.getElementById('remFreq').value;
+  if(!med || !time){ showToast('Please enter medicine name and time'); return; }
+  reminders.unshift({med, time, freq});
+  renderReminders();
+  document.getElementById('remMed').value=''; document.getElementById('remTime').value='';
+  showToast('Reminder set for '+med);
+}
+function renderReminders(){
+  document.getElementById('reminderList').innerHTML = reminders.length ? reminders.map((r,i)=>`
+    <div class="list-row"><div class="av-lg">⏰</div><div class="grow"><h4>${r.med}</h4><p>${r.time} · ${r.freq}</p></div><button class="icon-btn" onclick="removeReminder(${i})">✕</button></div>
+  `).join('') : '<div class="empty-state">No reminders set yet.</div>';
+}
+function removeReminder(i){ reminders.splice(i,1); renderReminders(); }
+
+/* ---------------- FAMILY ---------------- */
+function addFamily(){
+  const name = document.getElementById('famName').value;
+  const rel = document.getElementById('famRel').value;
+  if(!name){ showToast('Please enter a name'); return; }
+  familyMembers.push({name, rel});
+  renderFamily();
+  document.getElementById('famName').value='';
+  showToast(name+' added to family profile');
+}
+function renderFamily(){
+  document.getElementById('familyChips').innerHTML = familyMembers.map(f=>`<span class="family-chip"><span class="fc-av">${f.name[0]}</span>${f.name} · ${f.rel}</span>`).join('');
+}
+
+/* ---------------- RECORDS ---------------- */
+const RECORDS = [
+  {name:"Blood Test Report — Aug 2026", type:"Lab Report"},
+  {name:"Dr. Sharma Prescription — Jul 2026", type:"Prescription"},
+  {name:"Chest X-Ray Scan", type:"Scan"},
+  {name:"Vaccination Certificate", type:"Certificate"},
+];
+function renderRecords(){
+  document.getElementById('recordsList').innerHTML = RECORDS.map(r=>`
+    <div class="card">
+      <div class="med-thumb" style="margin-bottom:10px;">📁</div>
+      <h4 style="font-size:13.5px;">${r.name}</h4>
+      <p class="small-note">${r.type}</p>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="showToast('Downloading ${r.name}')">Download</button>
+    </div>`).join('');
+}
+
+/* ---------------- INVENTORY (ADMIN) ---------------- */
+function renderInventory(){
+  document.getElementById('inventoryTable').innerHTML = MEDICINES.map(m=>`
+    <div class="list-row">
+      <div class="av-lg">${medIcon()}</div>
+      <div class="grow"><h4>${m.name}</h4><p>${m.cat} · SKU-${1000+m.id}</p></div>
+      <div style="width:120px;">
+        <div class="progress-track"><div class="progress-fill" style="width:${Math.min(m.stock/6,100)}%; background:${m.stock<20?'var(--danger)':'var(--primary)'}"></div></div>
+        <p class="small-note mono">${m.stock} units</p>
+      </div>
+      <span class="status-pill ${m.stock<20?'pill-red':'pill-green'}">${m.stock<20?'Restock needed':'In stock'}</span>
+      <button class="btn btn-outline btn-sm" onclick="restock(${m.id})">Restock</button>
+    </div>`).join('');
+}
+function restock(id){
+  const m = MEDICINES.find(x=>x.id===id);
+  m.stock += 200;
+  renderInventory();
+  showToast(m.name+' restocked (+200 units)');
+}
+
+/* ---------------- REVIEWS ---------------- */
+const REVIEWS = [
+  {user:"Ananya P.", rating:5, text:"Super fast delivery and genuine medicines. The AI reminder feature is a lifesaver!"},
+  {user:"Vikram S.", rating:4, text:"Doctor consultation was smooth, though the video call lagged a bit."},
+  {user:"Farida K.", rating:5, text:"Uploaded my prescription and got my mother's medicines within hours."},
+];
+function renderReviews(){
+  document.getElementById('reviewList').innerHTML = REVIEWS.map(r=>`
+    <div class="list-row"><div class="av-lg">${r.user[0]}</div><div class="grow"><h4>${r.user} <span class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></h4><p>${r.text}</p></div></div>
+  `).join('');
+  document.getElementById('starPicker').innerHTML = [1,2,3,4,5].map(n=>`<button class="chip-filter ${n<=selectedRating?'active':''}" onclick="selectedRating=${n}; renderReviews()">★${n}</button>`).join('');
+}
+function submitReview(){
+  const text = document.getElementById('reviewText').value.trim();
+  if(!text){ showToast('Please write something first'); return; }
+  REVIEWS.unshift({user:"You", rating:selectedRating, text});
+  document.getElementById('reviewText').value='';
+  renderReviews();
+  showToast('Thanks for your review!');
+}
+
+/* ---------------- ORDERS (past) ---------------- */
+const PAST_ORDERS = [
+  {id:"MP-88190", date:"12 Aug 2026", total:340, status:"Delivered"},
+  {id:"MP-87765", date:"02 Aug 2026", total:120, status:"Delivered"},
+  {id:"MP-87210", date:"22 Jul 2026", total:890, status:"Delivered"},
+];
+function renderPastOrders(){
+  document.getElementById('pastOrdersList').innerHTML = PAST_ORDERS.map(o=>`
+    <div class="list-row"><div class="av-lg">📦</div><div class="grow"><h4 class="mono">${o.id}</h4><p>${o.date} · ₹${o.total}</p></div><span class="status-pill pill-green">${o.status}</span><button class="btn btn-outline btn-sm" onclick="showToast('Items from ${o.id} added to cart')">Reorder</button></div>
+  `).join('');
+}
+function renderRecentOrders(){
+  document.getElementById('recentOrdersList').innerHTML = PAST_ORDERS.map(o=>`
+    <div class="list-row"><div class="av-lg">📦</div><div class="grow"><h4 class="mono">${o.id}</h4><p>${o.date} · ₹${o.total}</p></div><span class="status-pill pill-green">${o.status}</span></div>
+  `).join('');
+}
+function submitReturn(){
+  const id = document.getElementById('returnOrderId').value;
+  if(!id){ showToast('Please enter an order ID'); return; }
+  showToast('Return request submitted for '+id);
+  document.getElementById('returnOrderId').value='';
+}
+function switchTab(btn, panelId){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
+/* ---------------- INSURANCE / SUPPORT ---------------- */
+function submitClaim(){ showToast('Insurance claim submitted — reference #CLM-'+Math.floor(Math.random()*90000+10000)); }
+function submitSupport(){
+  const msg = document.getElementById('supportMsg').value.trim();
+  if(!msg){ showToast('Please describe your issue first'); return; }
+  document.getElementById('supportMsg').value='';
+  showToast('Support ticket raised — we will reply within 24 hours');
+}
+
+/* ---------------- FAQ ---------------- */
+const FAQS = [
+  {q:"How fast is delivery?", a:"Most orders in metro cities are delivered within 90 minutes; others within 24-48 hours."},
+  {q:"Are the medicines genuine?", a:"Every medicine is sourced from licensed distributors and batch-verified before dispatch."},
+  {q:"Can I upload a prescription later?", a:"Yes — for Rx medicines you can upload your prescription any time before your order ships."},
+];
+function renderFAQ(){
+  document.getElementById('faqList').innerHTML = FAQS.map((f,i)=>`
+    <div class="acc-item" id="faq-${i}">
+      <div class="acc-head" onclick="toggleFAQ(${i})"><span>${f.q}</span><svg class="acc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></div>
+      <div class="acc-body"><p>${f.a}</p></div>
+    </div>`).join('');
+}
+function toggleFAQ(i){ document.getElementById('faq-'+i).classList.toggle('open'); }
+
+/* ---------------- SOS ---------------- */
+function triggerSOS(){
+  showToast('🚨 Emergency alert sent to nearest ambulance & your emergency contacts');
+  navigateTo('ambulance');
+}
+
+/* ---------------- AI ASSISTANT (rule-based) ---------------- */
+const CHAT_SUGGESTIONS = ["Headache remedy","Generic for Paracetamol","Book a doctor","Track my order"];
+function renderChatSuggestions(){
+  document.getElementById('chatSuggestions').innerHTML = CHAT_SUGGESTIONS.map(s=>`<button onclick="askAI('${s}')">${s}</button>`).join('');
+}
+function toggleChat(){
+  const panel = document.getElementById('chatPanel');
+  panel.classList.toggle('show');
+  if(panel.classList.contains('show') && document.getElementById('chatBody').children.length===0){
+    addChatMsg('bot', "Hi! I'm the MedixPro AI Assistant 👋 I can help with symptoms, medicine info, generic alternatives, and booking doctors. What's going on today?");
+  }
+}
+function addChatMsg(who, text){
+  const body = document.getElementById('chatBody');
+  const div = document.createElement('div');
+  div.className = 'msg '+who;
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  addChatMsg('user', text);
+  input.value='';
+  setTimeout(()=>addChatMsg('bot', aiRespond(text)), 500);
+}
+function askAI(q){
+  if(!document.getElementById('chatPanel').classList.contains('show')) toggleChat();
+  addChatMsg('user', q);
+  setTimeout(()=>addChatMsg('bot', aiRespond(q)), 500);
+}
+function aiRespond(q){
+  const t = q.toLowerCase();
+  if(t.includes('headache') || t.includes('fever')) return "For mild headache and fever, Paracetamol 500mg (every 6 hours, max 4/day) usually helps. Stay hydrated and rest. If fever crosses 102°F or lasts more than 3 days, please see a doctor.";
+  if(t.includes('alternative') || t.includes('generic')) return "Generic Paracetamol (Acetaminophen) works identically to branded versions at a lower cost. Check the Medicine Catalog — I've tagged the generic name on every product card.";
+  if(t.includes('ibuprofen') && t.includes('aspirin')) return "Combining Ibuprofen and Aspirin can raise the risk of stomach bleeding. It's best to avoid taking them together — use the Interaction Checker page for a full breakdown.";
+  if(t.includes('diabetes') || t.includes('diet')) return "For diabetes-friendly eating: favor high-fiber whole grains, leafy greens, and lean protein; limit refined sugar and processed carbs. Pair this with your prescribed Metformin routine and regular HbA1c checks.";
+  if(t.includes('book') && t.includes('doctor')) return "Sure — head to the Doctors page, pick a specialty, and hit 'Book Appointment'. I can also take you there now if you'd like.";
+  if(t.includes('track') || t.includes('order')) return "Your most recent order #MP-88421 is currently in transit and should arrive today. You can see the full timeline on the My Orders page.";
+  if(t.includes('cough') || t.includes('cold')) return "For a common cold or mild cough: warm fluids, steam inhalation, and rest are usually enough. An OTC cough syrup can help at night. See a doctor if it lasts beyond a week or you develop breathing difficulty.";
+  if(t.includes('hi') || t.includes('hello') || t.includes('hey')) return "Hello! Tell me your symptom or the medicine you're curious about, and I'll do my best to help.";
+  return "Thanks for sharing that. For anything beyond general wellness tips, I'd recommend using the Symptom Checker or booking a quick consult with one of our doctors so you get advice tailored to you.";
+}
+
+/* ---------------- CHARTS ---------------- */
+function initCharts(){
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(11,37,64,0.06)';
+  const textColor = isDark ? '#C3D3E0' : '#3A5065';
+  Chart.defaults.color = textColor;
+  Chart.defaults.font.family = "Inter";
+
+  new Chart(document.getElementById('dashChart'), {
+    type:'line',
+    data:{ labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[{label:'Orders', data:[620,710,690,820,880,940,842], borderColor:'#0F6E5D', backgroundColor:'rgba(15,110,93,0.12)', fill:true, tension:.4, pointRadius:0}] },
+    options:{ plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}}, y:{grid:{color:gridColor}} } }
+  });
+  new Chart(document.getElementById('catChart'), {
+    type:'doughnut',
+    data:{ labels:['Pain Relief','Antibiotics','Diabetes','Supplements','Other'],
+      datasets:[{data:[28,20,15,17,20], backgroundColor:['#0F6E5D','#FF7A45','#C98A12','#3A5065','#84A0B8']}] },
+    options:{ plugins:{legend:{position:'bottom', labels:{boxWidth:10, padding:12, font:{size:11}}}} }
+  });
+  new Chart(document.getElementById('revChart'), {
+    type:'bar',
+    data:{ labels:['Mar','Apr','May','Jun','Jul','Aug'],
+      datasets:[{label:'Revenue', data:[42,48,51,60,64,72], backgroundColor:'#0F6E5D', borderRadius:6}] },
+    options:{ plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}}, y:{grid:{color:gridColor}} } }
+  });
+  new Chart(document.getElementById('channelChart'), {
+    type:'pie',
+    data:{ labels:['App Orders','Website','In-store','Doctor Referral'],
+      datasets:[{data:[45,30,15,10], backgroundColor:['#0F6E5D','#FF7A45','#C98A12','#3A5065']}] },
+    options:{ plugins:{legend:{position:'bottom', labels:{boxWidth:10, padding:12, font:{size:11}}}} }
+  });
+}
+
+/* ---------------- INIT ---------------- */
+function init(){
+  renderCatFilters(); renderCatalog();
+  renderSymptomChips();
+  fillInteractionSelects();
+  renderHospitals();
+  renderSpecialtyFilters(); renderDoctors();
+  fillDoctorSelect(); renderAppts();
+  renderLabs();
+  renderBloodChips();
+  renderRxList();
+  renderReminders();
+  renderFamily();
+  renderRecords();
+  renderInventory();
+  renderReviews();
+  renderPastOrders();
+  renderRecentOrders();
+  renderFAQ();
+  renderChatSuggestions();
+  updateCartUI();
+  initCharts();
+}
+init();
+</script>
+</body>
+</html>

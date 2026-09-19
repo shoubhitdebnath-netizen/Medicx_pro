@@ -1,0 +1,18 @@
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("MedixPro App Loaded Successfully.");
+
+    const setReminderBtn = document.getElementById("set-reminder-btn");
+    if (setReminderBtn) {
+        setReminderBtn.addEventListener("click", () => {
+            alert("MedixPro AI: Dosage reminder set successfully!");
+        });
+    }
+
+    const checkRefill = (stockLevel) => {
+        if (stockLevel < 5) {
+            console.warn("MedixPro Alert: Medicine stock low. Auto-refill initiated.");
+        }
+    };
+
+    checkRefill(3);
+});
